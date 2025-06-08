@@ -1,4 +1,4 @@
-# src/Database/setup_database.py
+# src/data/setup_database.py
 
 import mysql.connector
 from mysql.connector import Error as MySQLError
