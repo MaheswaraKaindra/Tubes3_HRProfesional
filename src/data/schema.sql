@@ -1,4 +1,4 @@
--- src/Database/schema.sql
+-- src/data/schema.sql
 
 -- ApplicationDetail should be deleted before ApplicantProfile (Child class, Basis Data moment)
 DROP TABLE IF EXISTS ApplicationDetail;
