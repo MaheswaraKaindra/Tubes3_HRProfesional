@@ -34,17 +34,17 @@ def normalize_text(text:str) -> str:
     
 # Just for testing
 if __name__ == "__main__":
-    pdf_path = "10276858.pdf"
+    pdf_path = "data/Accountant/13491889.pdf"
     text = pdf_to_string(pdf_path)
 
     if text:
         print("Extracted text from PDF:")
         print(text)
-    normalized_text = normalize_text(text)
+    # normalized_text = normalize_text(text)
 
-    if normalized_text:
-        print("Normalized text:")
-        print(normalized_text)
+    # if normalized_text:
+    #     print("Normalized text:")
+    #     print(normalized_text)
         
-    else:
-        print("No text extracted from the PDF.")
+    # else:
+    #     print("No text extracted from the PDF.")

@@ -7,18 +7,20 @@ import os
 def setup_database():
     # Preventing the "NameError: name 'connection' is not defined" error
     connection = None
+    cursor = None
 
     try:
         # Connect to MySQL server
         connection = mysql.connector.connect (
             host        = "localhost",
             user        = "root",
-            password    = ""
+            password    = "meteor"
         )
         cursor = connection.cursor()
 
         # Create database if it doesn't exist
         cursor.execute("CREATE DATABASE IF NOT EXISTS HRProfesional_schema")
+        cursor.execute("USE HRProfesional_schema")
         print("Database created.")
 
         # Use the database
@@ -31,14 +33,17 @@ def setup_database():
         with open(schema_path, 'r') as file:
             schema_sql = file.read()
 
-        # Execute schema.sql
-        for result in cursor.execute(schema_sql, multi=True):
-            if result.with_rows:
-                print(f"Result: {result.fetchall()}")
-            else:
-                print(f"Command executed: {result.rowcount} rows affected.")
+        statements = [s.strip() for s in schema_sql.split(';') if s.strip()]
+        for stmt in statements:
+            cursor.execute(stmt)
+            print(f"Executed: {stmt.split()[0]}")    
+
+        for stmt in statements:
+            cursor.execute(stmt)
+            print(f"Executed: {stmt.split()[0]}")
 
         # Debug print XD
+        connection.commit()
         print("Database setup completed successfully.")
 
 
@@ -46,8 +51,9 @@ def setup_database():
         print(f"Error connecting to MySQL server: {e}")
     
     finally:
-        if connection.is_connected():
+        if cursor is not None:
             cursor.close()
+        if connection is not None and connection.is_connected():
             connection.close()
 
 if __name__ == "__main__":
