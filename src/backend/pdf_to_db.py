@@ -90,7 +90,7 @@ if __name__ == "__main__":
     db = {
         "host":     "localhost",
         "user":     "root",
-        "password": "meteor",
+        "password": "",
         "database": "HRProfesional_schema",
         "charset":  "utf8mb4"
     }

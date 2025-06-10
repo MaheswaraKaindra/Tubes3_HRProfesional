@@ -14,7 +14,7 @@ def setup_database():
         connection = mysql.connector.connect (
             host        = "localhost",
             user        = "root",
-            password    = "meteor"
+            password    = ""
         )
         cursor = connection.cursor()
 
