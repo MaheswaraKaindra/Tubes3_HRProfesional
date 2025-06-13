@@ -1,5 +1,5 @@
 import flet as ft
-import about
+import about, summary, utils
 
 class Home:
     def __init__(self, page: ft.Page):
@@ -22,8 +22,9 @@ class Home:
             "About Us",
             bgcolor="#FAF7F0",
             color="#000000",
+            width=100,
             style=ft.ButtonStyle(
-                shape=ft.RoundedRectangleBorder(radius=10),
+                shape=ft.RoundedRectangleBorder(radius=8),
             ),
             on_click=on_about_us_click,
         )
@@ -122,87 +123,14 @@ class Home:
         )
 
         # Right Panel - Results
-        def create_cv_card(name, results):
-            # result adalah dictionary dengan keyword sebagai key dan jumlah kemunculan sebagai value
-            total_matches = sum(results.values())
-            keyword_texts = []
-            for i, (keyword, count) in enumerate(results.items()):
-                if (i == 3):
-                    keyword_texts.append(ft.Text(f"... and {len(results) - 3} more keywords", size=12, color="#000000"))
-                    break
-                if (count == 1):
-                    keyword_texts.append(
-                        ft.Text(f"{i+1}. {keyword}: {count} occurence", size=12, color="#000000")
-                    )
-                elif (count > 1):
-                    keyword_texts.append(
-                        ft.Text(f"{i+1}. {keyword}: {count} occurences", size=12, color="#000000")
-                )
-                
-            return ft.Card(
-                content=ft.Container(
-                    content=ft.Column(
-                        [   
-                            ft.Row(
-                                [   
-                                    ft.Container(
-                                        content=ft.Text(name, weight=ft.FontWeight.BOLD, size=18, color="#000000"), # nama
-                                        alignment=ft.alignment.top_left,
-                                        expand=True
-                                    ),
-                                    ft.Container(
-                                        content=ft.Text(f"{total_matches} matches", size=12, color="#000000"), # total matches 
-                                        alignment=ft.alignment.top_right,
-                                        expand=False
-                                    ), 
-                                ],
-                                vertical_alignment=ft.CrossAxisAlignment.START,
-                                spacing=5
-                            ),
-                            ft.Container(height=5),
-                            ft.Text("Matched keywords:", size=12, weight=ft.FontWeight.W_500, color="#000000"),
-                            ft.Column(keyword_texts, spacing=2, expand=True),
-                            ft.Row(
-                                [
-                                    ft.Container(
-                                        content=ft.TextButton("Summary", style=ft.ButtonStyle(
-                                                                bgcolor="#395B9D", 
-                                                                color="#DEE2E2", 
-                                                                shadow_color="#395B9D",
-                                                                shape=ft.RoundedRectangleBorder(radius=8) 
-                                                            )
-                                                ),
-                                        alignment=ft.alignment.bottom_left,
-                                        expand=True,
-                                    ),
-                                    ft.Container(
-                                        content=ft.TextButton("View CV", style=ft.ButtonStyle(
-                                                                bgcolor="#395B9D", 
-                                                                color="#DEE2E2", 
-                                                                shadow_color="#395B9D",
-                                                                shape=ft.RoundedRectangleBorder(radius=8)
-                                                            )
-                                                ),
-                                        alignment=ft.alignment.bottom_right,
-                                    ),
-                                    
-                                ],
-                                vertical_alignment=ft.CrossAxisAlignment.END,
-                                spacing=5
-                            )
-                        ],
-                        spacing=3
-                    ),
-                    width=200,
-                    padding=15,
-                    bgcolor="#FFFFFF",
-                    border_radius=8,
-                    shadow=ft.BoxShadow(blur_radius=5, color="#395B9D")
-                )
-            )
-        
+        def on_summary_click(e):
+            self.page.clean()
+            about_page = summary.Summary(self.page)
+            about_page.build_ui()
 
-        # Hasil Pencarian CV
+        def on_view_cv_click(e):
+            self.page.clean()
+
         cv_results_grid = ft.GridView(
             runs_count=3,
             max_extent=280,
@@ -221,7 +149,7 @@ class Home:
             {"name": "David Lee",    "keyword_counts": {"Marketing": 1, "SEO": 1}},
         ]
         for cv_data in example_cvs:
-            cv_results_grid.controls.append(create_cv_card(cv_data["name"], cv_data["keyword_counts"]))
+            cv_results_grid.controls.append(utils.create_cv_card(self.page, cv_data["name"], cv_data["keyword_counts"], on_summary_click=on_summary_click, on_view_cv_click=on_view_cv_click))
 
         # TODO: dari algoritma, cuma placeholder
         results_info_text = ft.Text("Exact Match: 100 CVs scanned in 100 ms", size=14, color="#863E38", weight=ft.FontWeight.W_500, text_align=ft.TextAlign.CENTER)
