@@ -1,5 +1,5 @@
 import flet as ft
-import home
+from . import home
 
 class About:
     def __init__(self, page: ft.Page):

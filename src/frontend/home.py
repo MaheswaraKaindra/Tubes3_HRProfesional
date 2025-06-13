@@ -1,5 +1,9 @@
 import flet as ft
-import about, summary, utils
+
+from . import about, summary, utils
+
+from src.backend import search_controller
+
 
 class Home:
     def __init__(self, page: ft.Page):
@@ -8,6 +12,11 @@ class Home:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
+        search_controller.load_cv_data("data")
+
+        # Global variables for search
+        self.keywords = []
+        self.algorithm = "BM"
 
         self.build_ui()
 
@@ -73,11 +82,38 @@ class Home:
         )
 
         def on_search_click(e):
-            keywords = self.keywords_input.value.split(',')
-            num_applicants = self.num_applicants_input.value
-            algorithm = self.algorithm_options.value
-            # TODO: panggil fungsi pencarian
-            print(f"Searching for: {keywords}, Number of applicants: {num_applicants}, Algorithm: {algorithm}")
+
+            # 1. Ambil input dari UI
+            keywords_str = keywords_input.value
+            if not keywords_str:
+                return # Jangan lakukan apa-apa jika keyword kosong
+
+            keywords = [k.strip() for k in keywords_str.split(',')]
+            algorithm = "BM" if algorithm_switch.value else "KMP"
+            try:
+                top_n = int(num_applicants_input.value)
+            except (ValueError, TypeError):
+                top_n = 10 # Default 10 jika input kosong atau tidak valid
+
+            # 2. Panggil controller backend
+            search_output = search_controller.search_cv_data(keywords, algorithm)
+
+            # 3. Update UI dengan hasil pencarian
+            cv_results_grid.controls.clear() # Bersihkan hasil sebelumnya
+
+            # Update teks info
+            results_info_text.value = f"{search_output['scan_count']} CVs scanned in {search_output['execution_time']:.2f} ms"
+
+            top_results = search_output['results'][:top_n]
+
+            if not top_results:
+                cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
+            else:
+                for cv_data in top_results:
+                    cv_results_grid.controls.append(create_cv_card(cv_data["name"], cv_data["keyword_counts"]))
+            
+            self.page.update()
+
 
         self.search_button = ft.ElevatedButton( # search button
             "Search",
@@ -140,19 +176,6 @@ class Home:
             padding=10,
             # expand=True
         )
-
-        # Tambahkan beberapa contoh kartu ke grid
-        example_cvs = [
-            {"name": "Efrina",       "keyword_counts": {"Java": 2, "Python": 2}},
-            {"name": "Budi Santoso", "keyword_counts": {"JavaScript": 1, "React": 1, "Node.js": 1, "SQL": 1}},
-            {"name": "Citra Ayu",    "keyword_counts": {"Data Analysis": 2, "SQL": 2, "Tableau": 1}},
-            {"name": "David Lee",    "keyword_counts": {"Marketing": 1, "SEO": 1}},
-        ]
-        for cv_data in example_cvs:
-            cv_results_grid.controls.append(utils.create_cv_card(self.page, cv_data["name"], cv_data["keyword_counts"], on_summary_click=on_summary_click, on_view_cv_click=on_view_cv_click))
-
-        # TODO: dari algoritma, cuma placeholder
-        results_info_text = ft.Text("Exact Match: 100 CVs scanned in 100 ms", size=14, color="#863E38", weight=ft.FontWeight.W_500, text_align=ft.TextAlign.CENTER)
 
         right_panel_content = ft.Container(
             content=ft.Column(
