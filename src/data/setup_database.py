@@ -12,7 +12,7 @@ def setup_database():
         # Connect to MySQL server
         connection = mysql.connector.connect (
             host        = "localhost",
-            user        = "root",
+            user        = "hr_admin",
             password    = ""
         )
         cursor = connection.cursor()
@@ -29,18 +29,17 @@ def setup_database():
         schema_path = os.path.join(sql_directory, 'schema.sql')
 
         with open(schema_path, 'r') as file:
-            schema_sql = file.read()
+            schema_sql = file.read().split(';')
 
-        # Execute schema.sql
-        for result in cursor.execute(schema_sql, multi=True):
-            if result.with_rows:
-                print(f"Result: {result.fetchall()}")
-            else:
-                print(f"Command executed: {result.rowcount} rows affected.")
-
-        # Debug print XD
+        for command in schema_sql:
+            if command.strip() != '':
+                try:
+                    cursor.execute(command)
+                    print(f"\nExecuted command: {command.strip()}")
+                except MySQLError as e:
+                    print(f"\nError executing command: {command.strip()}\nError: {e}")
+        connection.commit()
         print("Database setup completed successfully.")
-
 
     except MySQLError as e:
         print(f"Error connecting to MySQL server: {e}")
