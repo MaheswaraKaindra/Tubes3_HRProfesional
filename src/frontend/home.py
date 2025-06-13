@@ -1,7 +1,9 @@
 import flet as ft
-from . import about
+
+from . import about, summary, utils
 
 from src.backend import search_controller
+
 
 class Home:
     def __init__(self, page: ft.Page):
@@ -25,21 +27,22 @@ class Home:
             about_page = about.About(self.page)
             about_page.build_ui()
 
-        about_us_button = ft.ElevatedButton(
+        self.about_us_button = ft.ElevatedButton( # about us button
             "About Us",
             bgcolor="#FAF7F0",
             color="#000000",
+            width=100,
             style=ft.ButtonStyle(
-                shape=ft.RoundedRectangleBorder(radius=10),
+                shape=ft.RoundedRectangleBorder(radius=8),
             ),
             on_click=on_about_us_click,
         )
 
-        header_content = ft.Container(
+        self.header_content = ft.Container( # header
             content=ft.Row(
                 [
                     ft.Text("CV Analyzer App by HRProfesional", color="#FAF7F0", size=36, weight=ft.FontWeight.BOLD),
-                    ft.Row([about_us_button], alignment=ft.MainAxisAlignment.END, expand=True)
+                    ft.Row([self.about_us_button], alignment=ft.MainAxisAlignment.END, expand=True)
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
@@ -50,7 +53,7 @@ class Home:
         )
 
         # Left Panel - Search Controls
-        keywords_input = ft.TextField(
+        self.keywords_input = ft.TextField( # keywords input
             label="Enter keywords separated by comma",
             border_color="#395B9D",
             border_radius=5,
@@ -58,18 +61,28 @@ class Home:
             text_style=ft.TextStyle(color="#000000")
         )
 
-        algorithm_switch = ft.Switch(value=True, active_color="#395B9D")
+        self.algorithm_options = ft.RadioGroup( # algorithm input
+            content=ft.Row(
+                [
+                    ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
+                    ft.Container(width=20),
+                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
+                    # might add more
+                ],
+                alignment=ft.MainAxisAlignment.START,
+            )
+        ) 
 
-        num_applicants_input = ft.TextField(
+        self.num_applicants_input = ft.TextField( # number of applicants input
             label="Enter amount",
             border_color="#395B9D",
             border_radius=5,
             bgcolor="#FFFFFF",
-            # width=150, # Lebar spesifik untuk input jumlah
             text_style=ft.TextStyle(color="#000000")
         )
 
         def on_search_click(e):
+
             # 1. Ambil input dari UI
             keywords_str = keywords_input.value
             if not keywords_str:
@@ -101,16 +114,17 @@ class Home:
             
             self.page.update()
 
-        search_button = ft.ElevatedButton(
+
+        self.search_button = ft.ElevatedButton( # search button
             "Search",
-            bgcolor="#FDF6EC", # Warna krem muda
-            color="#395B9D", # Warna teks biru tua
+            bgcolor="#FDF6EC",
+            color="#395B9D",
             width=450,
             height=40,
             style=ft.ButtonStyle(
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
-            on_click=on_search_click, # Event handler untuk klik tombol
+            on_click=on_search_click,
         )
 
 
@@ -124,29 +138,19 @@ class Home:
                         weight=ft.FontWeight.BOLD,
                         color="#256988"
                     ),
-                    ft.Container(height=10), # Spasi
-                    ft.Text("What are you looking for?", size=16, weight=ft.FontWeight.W_500, color="#863E38"),
-                    keywords_input,
-                    ft.Container(height=10), # Spasi
-                    ft.Text("Choose the searching algorithm", size=16, weight=ft.FontWeight.W_500, color="#863E38"),
-                    ft.Row(
-                        [   
-                            ft.Container(width=120), # Spasi
-                            ft.Text("KMP", size=16, color="#000000", weight=ft.FontWeight.W_500),
-                            algorithm_switch,
-                            ft.Text("BM", size=16, color="#000000", weight=ft.FontWeight.W_500),
-                        ],
-                        alignment=ft.MainAxisAlignment.START,
-                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                        spacing=10
-                    ),
-                    ft.Container(height=10), # Spasi
-                    ft.Text("How many applicants do you want?", size=16, weight=ft.FontWeight.W_500, color="#863E38"),
-                    num_applicants_input,
-                    ft.Container(height=15), # Spasi lebih besar sebelum tombol
-                    search_button,
+                    ft.Container(height=10),
+                    ft.Text("What are you looking for?", size=16, weight=ft.FontWeight.W_500, color="#000000"),
+                    self.keywords_input,
+                    ft.Container(height=10),
+                    ft.Text("Choose the searching algorithm", size=16, weight=ft.FontWeight.W_500, color="#000000"),
+                    self.algorithm_options,
+                    ft.Container(height=10),
+                    ft.Text("How many applicants do you want?", size=16, weight=ft.FontWeight.W_500, color="#000000"),
+                    self.num_applicants_input,
+                    ft.Container(height=15),
+                    self.search_button,
                 ],
-                spacing=10, # Jarak antar kontrol di kolom kiri
+                spacing=10,
             ),
             bgcolor="#DEE2E2",
             padding=ft.padding.all(25),
@@ -155,64 +159,23 @@ class Home:
         )
 
         # Right Panel - Results
-        def create_cv_card(name, results):
-            # result adalah dictionary dengan keyword sebagai key dan jumlah kemunculan sebagai value
-            total_matches = sum(results.values())
-            keyword_texts = []
-            for i, (keyword, count) in enumerate(results.items()):
-                if (count == 1):
-                    keyword_texts.append(
-                        ft.Text(f"{i+1}. {keyword}: {count} occurence", size=12, color="#000000")
-                    )
-                elif (count > 1):
-                    keyword_texts.append(
-                        ft.Text(f"{i+1}. {keyword}: {count} occurences", size=12, color="#000000")
-                )
-            return ft.Card(
-                content=ft.Container(
-                    content=ft.Column(
-                        [
-                            ft.Text(name, weight=ft.FontWeight.BOLD, size=18, color="#000000"),
-                            # Tampilkan total matches
-                            ft.Text(f"{total_matches} matches", size=12, color="#000000"),
-                            ft.Container(height=5),
-                            ft.Text("Matched keywords:", size=12, weight=ft.FontWeight.W_500, color="#000000"),
-                            # Tampilkan daftar keyword beserta jumlah kemunculannya
-                            ft.Column(keyword_texts, spacing=2),
-                            ft.Container(height=10), # TODO
-                            ft.Row(
-                                [
-                                    ft.TextButton("Summary", style=ft.ButtonStyle(color="#395B9D")),
-                                    ft.TextButton("View CV", style=ft.ButtonStyle(color="#395B9D")),
-                                ],
-                                alignment=ft.MainAxisAlignment.END,
-                                spacing=5
-                            )
-                        ],
-                        spacing=3
-                    ),
-                    width=250,
-                    padding=15,
-                    bgcolor="#FFFFFF",
-                    border_radius=8,
-                    shadow=ft.BoxShadow(blur_radius=5, color="#395B9D")
-                )
-            )
-        
+        def on_summary_click(e):
+            self.page.clean()
+            about_page = summary.Summary(self.page)
+            about_page.build_ui()
 
-        # Hasil Pencarian CV
+        def on_view_cv_click(e):
+            self.page.clean()
+
         cv_results_grid = ft.GridView(
-            runs_count=3, # Jumlah kolom, sesuaikan dengan keinginan
-            max_extent=280, # Lebar maksimal setiap item, ini akan membantu responsivitas
+            runs_count=3,
+            max_extent=280,
             child_aspect_ratio=0.85, # Sesuaikan rasio aspek kartu
             spacing=10,
             run_spacing=10,
             padding=10,
-            # expand=True # Biarkan GridView mengambil ruang yang tersedia
+            # expand=True
         )
-
-        # TODO: dari algoritma
-        results_info_text = ft.Text("100 CVs scanned in 100 ms", size=14, color="#863E38", weight=ft.FontWeight.W_500, text_align=ft.TextAlign.CENTER)
 
         right_panel_content = ft.Container(
             content=ft.Column(
@@ -220,8 +183,7 @@ class Home:
                     ft.Container(
                         content=ft.Text("Results", size=28, weight=ft.FontWeight.BOLD, color="#256988", text_align=ft.TextAlign.CENTER),
                         alignment=ft.alignment.center,
-                        padding=ft.padding.only(bottom=5),
-                        # expand=True
+                        # padding=ft.padding.only(bottom=5),
                     ),
                     ft.Container(
                         content=results_info_text,
@@ -229,10 +191,10 @@ class Home:
                         padding=ft.padding.only(bottom=5),
                     ),
                     ft.Divider(height=1, color="#000000"),
-                    ft.Container(cv_results_grid, expand=True) # Biarkan GridView mengisi sisa ruang
+                    ft.Container(cv_results_grid, expand=True)
                 ],
-                spacing=10,
-                # expand=True # Biarkan Column mengambil ruang yang tersedia
+                spacing=5,
+                # expand=True
             ),
             bgcolor="#DEE2E2",
             padding=ft.padding.all(25),
@@ -240,25 +202,24 @@ class Home:
             margin=ft.margin.all(10),
         )
 
-        # Main layout - Row with two panels
+        # Main Layout
         main_layout = ft.Row(
             [
                 ft.Container(left_panel_content, expand=2, padding=5), # Panel kiri mengambil 2 bagian
                 ft.Container(right_panel_content, expand=3, padding=5), # Panel kanan mengambil 3 bagian
             ],
             vertical_alignment=ft.CrossAxisAlignment.START,
-            # expand=True # Biarkan Row utama mengambil sisa tinggi
+            # expand=True
         )
 
-        # Bersihkan halaman dan tambahkan semua elemen
         self.page.clean()
         self.page.add(
             ft.Column(
                 [
-                    header_content,
-                    ft.Container(main_layout, expand=True) # Biarkan main_layout mengisi sisa ruang vertikal
+                    self.header_content,
+                    ft.Container(main_layout, expand=True)
                 ],
-                expand=True # Biarkan Column utama mengambil seluruh tinggi halaman
+                expand=True
             )
         )
         self.page.update()

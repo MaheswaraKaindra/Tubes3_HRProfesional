@@ -16,21 +16,22 @@ class About:
             home_page = home.Home(self.page)
             home_page.build_ui()
 
-        home_button = ft.ElevatedButton(
+        self.home_button = ft.ElevatedButton(
             "Home",
             bgcolor="#FAF7F0",
             color="#000000",
+            width=100,
             style=ft.ButtonStyle(
-                shape=ft.RoundedRectangleBorder(radius=10),
+                shape=ft.RoundedRectangleBorder(radius=8),
             ),
             on_click=on_home_click,
         )
 
-        header_content = ft.Container(
+        self.header_content = ft.Container(
             content=ft.Row(
                 [
                     ft.Text("CV Analyzer App by HRProfesional", color="#FAF7F0", size=36, weight=ft.FontWeight.BOLD),
-                    ft.Row([home_button], alignment=ft.MainAxisAlignment.END, expand=True)
+                    ft.Row([self.home_button], alignment=ft.MainAxisAlignment.END, expand=True)
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
@@ -82,7 +83,7 @@ class About:
         self.page.add(
             ft.Column(
                 [
-                    header_content,
+                    self.header_content,
                     ft.Container(
                         content=panel_content,
                         alignment=ft.alignment.center,
