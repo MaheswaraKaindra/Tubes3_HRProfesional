@@ -1,6 +1,6 @@
 # src/backend/knuth_morris_pratt.py
 
-from pdf_to_string import pdf_to_string 
+from .pdf_to_string import pdf_to_string
 
 def compute_border_function(pattern: str) -> list[int]:
     # Compute the border function for the Knuth-Morris-Pratt algorithm (size of the largest prefix which is also a suffix)
