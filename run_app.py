@@ -19,18 +19,26 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.horizontal_alignment = ft.CrossAxisAlignment.START
     page.bgcolor = '#395B9D'
-    final_results = {
-                    'name': '10554236', 
-                    'path': 'data\Accountant\10554236.pdf',
-                    'keyword_counts': 2,
-                    'relevance_score': 2
-                }
-    search_output = {
-        'results': final_results,
-        'scan_count': 5,
-        'exact_time': 100,
-        'fuzzy_time': 100
-    }
+
+    page.add(
+        ft.Column(
+            [
+                ft.Container(
+                    content=ft.Column(
+                        [   
+                            ft.Container(height=50),
+                            ft.Text("Loading...", color="#FAF7F0", size=36, weight=ft.FontWeight.BOLD),
+                            ft.Container(height=10),
+                            ft.ProgressRing(width=30, height=30, stroke_width=3, color="#FAF7F0")
+                        ],
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                    ),
+                )
+            ],
+            alignment=ft.alignment.center,
+        )
+    )
+
 
     pages = {
         "/home": Home(page, app_state),
