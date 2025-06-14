@@ -2,6 +2,7 @@ import flet as ft
 import threading
 
 from . import utils
+from .summary import Summary
 
 from src.backend import search_controller
 
@@ -169,6 +170,7 @@ class Home:
 
         # Right Panel - Results
         def on_summary_click(e):
+            self.page.views.append(Summary(self.page, self.search_output).build_ui())
             self.page.go("/summary")
 
         def on_view_cv_click(e):

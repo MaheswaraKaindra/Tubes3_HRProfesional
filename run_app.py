@@ -14,11 +14,23 @@ def main(page: ft.Page):
     page.vertical_alignment = ft.MainAxisAlignment.START
     page.horizontal_alignment = ft.CrossAxisAlignment.START
     page.bgcolor = '#395B9D'
+    final_results = {
+                    'name': '10554236', 
+                    'path': 'data\Accountant\10554236.pdf',
+                    'keyword_counts': 2,
+                    'relevance_score': 2
+                }
+    search_output = {
+        'results': final_results,
+        'scan_count': 5,
+        'exact_time': 100,
+        'fuzzy_time': 100
+    }
 
     pages = {
         "/home": Home(page),
         "/about": About(page),
-        "/summary": Summary(page)
+        "/summary": Summary(page, search_output)
     }
 
     def route_change(route):

@@ -1,6 +1,13 @@
 import mysql.connector, string
 
-def get_applicant_by_cv_path(cv_path: string, db: dict):
+def get_applicant_by_cv_path(cv_path: string):
+    db = {
+        "host":     "localhost",
+        "user":     "root",
+        "password": "meteor",
+        "database": "HRProfesional_schema",
+        "charset":  "utf8mb4"
+    }
     try:
         connection_configs = [
             {**db, "auth_plugin": "mysql_native_password", "use_pure": True},
@@ -57,11 +64,4 @@ def get_applicant_by_cv_path(cv_path: string, db: dict):
         print(f"Kesalahan lain: {e}")
 
 if __name__ == "__main__":
-    db = {
-        "host":     "localhost",
-        "user":     "root",
-        "password": "meteor",
-        "database": "HRProfesional_schema",
-        "charset":  "utf8mb4"
-    }
-    get_applicant_by_cv_path(r"data\Teacher\17311685.pdf", db)
+    get_applicant_by_cv_path(r"data\Teacher\17311685.pdf")
