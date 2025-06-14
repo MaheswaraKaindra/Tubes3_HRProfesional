@@ -13,7 +13,7 @@ def setup_database():
         # Connect to MySQL server
         connection = mysql.connector.connect (
             host        = "localhost",
-            user        = "root",
+            user        = "hr_admin",
             password    = ""
         )
         cursor = connection.cursor()
@@ -31,6 +31,7 @@ def setup_database():
         schema_path = os.path.join(sql_directory, 'schema.sql')
 
         with open(schema_path, 'r') as file:
+
             schema_sql = file.read()
 
         statements = [s.strip() for s in schema_sql.split(';') if s.strip()]
@@ -45,7 +46,6 @@ def setup_database():
         # Debug print XD
         connection.commit()
         print("Database setup completed successfully.")
-
 
     except MySQLError as e:
         print(f"Error connecting to MySQL server: {e}")

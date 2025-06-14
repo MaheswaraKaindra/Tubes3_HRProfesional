@@ -1,6 +1,6 @@
 # src/backend/boyer_moore.py
 
-from pdf_to_string import pdf_to_string
+from .pdf_to_string import pdf_to_string
 
 def compute_last_occurrence(pattern: str) -> dict:
     last_occurrence = {}
