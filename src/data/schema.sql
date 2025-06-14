@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS ApplicationDetail;
 DROP TABLE IF EXISTS ApplicantProfile;
 
 CREATE TABLE ApplicantProfile (
-    applicant_id INT NOT NULL,
+    applicant_id INT NOT NULL AUTO_INCREMENT,
     first_name VARCHAR(50) DEFAULT NULL,
     last_name VARCHAR(50) DEFAULT NULL,
     date_of_birth DATE DEFAULT NULL,
@@ -15,7 +15,7 @@ CREATE TABLE ApplicantProfile (
 );
 
 CREATE TABLE ApplicationDetail (
-    detail_id INT NOT NULL,
+    detail_id INT NOT NULL AUTO_INCREMENT,
     applicant_id INT NOT NULL,
     application_role VARCHAR(100) DEFAULT NULL,
     cv_path TEXT,
