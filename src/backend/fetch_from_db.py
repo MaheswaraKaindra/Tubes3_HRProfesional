@@ -3,8 +3,8 @@ import mysql.connector, string
 def get_applicant_by_cv_path(cv_path: string):
     db = {
         "host":     "localhost",
-        "user":     "hr_admin",
-        "password": "",
+        "user":     "root",
+        "password": "PipinITB_01",
         "database": "HRProfesional_schema",
         "charset":  "utf8mb4"
     }
@@ -30,6 +30,8 @@ def get_applicant_by_cv_path(cv_path: string):
             return
 
         cur = conn.cursor(dictionary=True)
+        normalize_cv_path = cv_path.replace("\\", "/")
+        print(f"Mencari pelamar dengan CV path: {normalize_cv_path}")
 
         cur.execute("""
             SELECT ap.applicant_id, ap.first_name, ap.last_name, ap.date_of_birth, ap.address, ap.phone_number,
@@ -37,7 +39,7 @@ def get_applicant_by_cv_path(cv_path: string):
             FROM ApplicantProfile ap
             LEFT JOIN ApplicationDetail ad ON ap.applicant_id = ad.applicant_id
             WHERE ad.cv_path = %s
-        """, (cv_path,))
+        """, (normalize_cv_path,))
 
         result = cur.fetchall()
         cur.close()

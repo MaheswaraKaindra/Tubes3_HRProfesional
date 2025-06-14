@@ -134,9 +134,6 @@ class Summary:
         text = pdf_to_string(cv_path) if cv_path else ""
         parsed_text = parse_resume(text) if text else {}
         profile = get_applicant_by_cv_path(cv_path) if cv_path else {}
-        # for row in profile:
-        #     print(f"{row}: {profile[row]}")
-
 
         profile_card = ft.Card(
             height=200,
@@ -145,11 +142,8 @@ class Summary:
                     [   
                         ft.Text("PROFILE", size=20, weight=ft.FontWeight.BOLD, color="#000000", text_align=ft.TextAlign.CENTER),
                         ft.Divider(height=1, color="#000000"),
-                        ft.Text(f"Name: {profile[1]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
-                        ft.Text(f"Date of Birth: {profile[2]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
-                        ft.Text(f"Address: {profile[3]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
-                        ft.Text(f"Phone Number: {profile[4]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
-                        ft.Text(f"Role: {profile[5]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                        ft.Text(f"Name: {profile[1]} \nDate of Birth: {profile[2]} \nAddress: {profile[3]} \nPhone Number: {profile[4]} \nRole: {profile[5]} \n", 
+                                size=16, color="#000000", text_align=ft.TextAlign.LEFT),
                     ],
                     spacing=5,
                     horizontal_alignment=ft.CrossAxisAlignment.START,
@@ -163,11 +157,36 @@ class Summary:
             ),
         )
 
-        cv_summary_grid.controls.append(profile_card)
-        cv_summary_grid.controls.append(create_cv_summary_card("SUMMARY", parsed_text['summary']))
-        cv_summary_grid.controls.append(create_cv_summary_card("SKILLS", parsed_text['skills']))
-        cv_summary_grid.controls.append(create_cv_summary_card("EXPERIENCE", parsed_text['experience']))
-        cv_summary_grid.controls.append(create_cv_summary_card("EDUCATION", parsed_text['education']))
+        cv_summary_grid.controls.append(profile_card) # profil
+
+        summary_string = "\n".join(parsed_text.get('summary', [])) or "Not available"
+        skills_string = "\n".join(parsed_text.get('skills', [])) or "Not available"
+        education_string = "\n".join(parsed_text.get('education', [])) or "Not available"
+        experience_items = []
+        for job in parsed_text.get('experience', []):
+            date_range = job.get('date_range') or '-'
+            company = job.get('company') or '-'
+            location = job.get('location') or '-'
+            job_title = job.get('job_title') or '-'
+            responsibilities_list = job.get('responsibilities', [])
+            if responsibilities_list:
+                responsibilities_text = '\n'.join([f"  • {resp}" for resp in responsibilities_list])
+            else:
+                responsibilities_text = "-"
+            job_text = (
+                f"Date range: {date_range}\n"
+                f"Company: {company}\n"
+                f"Location: {location}\n"
+                f"Job Title: {job_title}\n"
+                f"Responsibilities:\n{responsibilities_text}"
+            )
+            experience_items.append(job_text)
+        experience_string = "\n\n".join(experience_items) or "Not available"
+
+        cv_summary_grid.controls.append(create_cv_summary_card("SUMMARY", summary_string))
+        cv_summary_grid.controls.append(create_cv_summary_card("SKILLS", skills_string))
+        cv_summary_grid.controls.append(create_cv_summary_card("EXPERIENCE", experience_string))
+        cv_summary_grid.controls.append(create_cv_summary_card("EDUCATION", education_string))
         
         right_panel_content = ft.Container(
             content=ft.Column(
