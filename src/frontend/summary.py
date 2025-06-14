@@ -1,5 +1,5 @@
 import flet as ft
-import utils
+from . import utils
 
 class Summary:
     def __init__(self, page: ft.Page):

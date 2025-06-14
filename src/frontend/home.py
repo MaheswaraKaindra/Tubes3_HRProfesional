@@ -21,6 +21,7 @@ class Home:
         self.algorithm = "BM"
 
     def build_ui(self):
+        self.search_output = None
         # Header Section
         def on_about_us_click(e):
             self.page.go("/about")
@@ -97,16 +98,16 @@ class Home:
                 top_n = 10 # Default 10 jika input kosong atau tidak valid
 
             # 2. Panggil controller backend
-            search_output = search_controller.search_cv_data(keywords, algorithm, top_n, fuzzy_threshold=80.0)
+            self.search_output = search_controller.search_cv_data(keywords, algorithm, top_n, fuzzy_threshold=80.0)
 
             # 3. Update UI dengan hasil pencarian
             cv_results_grid.controls.clear() # Bersihkan hasil sebelumnya
 
             # Update teks info
-            total_time = search_output.get('exact_time', 0) + search_output.get('fuzzy_time', 0)
-            results_info_text.value = f"{search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
+            total_time = self.search_output.get('exact_time', 0) + self.search_output.get('fuzzy_time', 0)
+            results_info_text.value = f"{self.search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
 
-            top_results = search_output['results'][:top_n]
+            top_results = self.search_output['results'][:top_n]
 
             if not top_results:
                 cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
