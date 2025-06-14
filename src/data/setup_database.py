@@ -13,8 +13,8 @@ def setup_database():
         # Connect to MySQL server
         connection = mysql.connector.connect (
             host        = "localhost",
-            user        = "hr_admin",
-            password    = ""
+            user        = "root",
+            password    = "PipinITB_01"
         )
         cursor = connection.cursor()
 
