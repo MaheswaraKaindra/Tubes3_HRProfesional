@@ -1,8 +1,11 @@
 import flet as ft
 import threading
+import os
+from flet import WebView
 
 from . import utils
 from .summary import Summary
+from .cv import CV
 
 from src.backend import search_controller
 from src.data.setup_database import setup_database
@@ -68,8 +71,9 @@ class Home:
                 [
                     ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
                     ft.Container(width=20),
-                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
-                    # might add more
+                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
+                    ft.Container(width=20),
+                    ft.Radio(value="AC", label="Aho-Corasick", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
                 ],
                 alignment=ft.MainAxisAlignment.START,
             )
@@ -186,8 +190,12 @@ class Home:
             # self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
             self.page.go("/summary")
 
-        def on_view_cv_click(e):
-            self.page.clean()
+        def on_view_cv_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+
+            self.page.go("/cv")
+           
 
         results_info_text = ft.Text()
 

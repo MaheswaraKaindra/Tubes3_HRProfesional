@@ -3,10 +3,10 @@
 import os
 import time
 import mysql.connector
-from .pdf_to_string import pdf_to_string, normalize_text
 from .knuth_morris_pratt import knuth_morris_pratt
 from .boyer_moore import boyer_moore
 from .search_logic import find_fuzzy_matches
+from .aho_corasick import aho_corasick
 
 def get_db_connection():
     try:
@@ -100,24 +100,41 @@ def load_cv_data(directory: str):
     print(f"Loaded {len(_cv_data_cache)} CVs.")
 
 def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
-    search_function = knuth_morris_pratt if algorithm == 'KMP' else boyer_moore
+    if algorithm == 'KMP':
+        search_function = knuth_morris_pratt
+    elif algorithm == 'BM':
+        search_function = boyer_moore
+    elif algorithm == 'AC':
+        search_function = None  # handled separately WKWKWK formatnya beda
+    else:
+        search_function = knuth_morris_pratt
     current_cv_keyword_counts = {}
     current_cv_matched_keywords = set()
     keywords_to_fuzzy_check = set(clean_keywords)
 
-    exact_start = time.perf_counter()
-    for keyword in clean_keywords:
-        print(f"Processing keyword: '{keyword}' in CV: '{cv['name']}'")
-        matches = search_function(cv['normalized_text'], keyword)
-        if matches:
-            current_cv_keyword_counts[keyword] = len(matches)
-            current_cv_matched_keywords.add(keyword)
-            if keyword in keywords_to_fuzzy_check:
-                keywords_to_fuzzy_check.remove(keyword)
-    exact_time = time.perf_counter() - exact_start
+    if algorithm == 'AC':
+        ac_results = aho_corasick(cv['normalized_text'], list(clean_keywords))
+        for keyword, count in ac_results.items():
+            if count > 0:
+                current_cv_keyword_counts[keyword] = count
+                current_cv_matched_keywords.add(keyword)
+                if keyword in keywords_to_fuzzy_check:
+                    keywords_to_fuzzy_check.remove(keyword)
+        exact_time = 0
+    else:
+        exact_start = time.perf_counter()
+        for keyword in clean_keywords:
+            print(f"Processing keyword: '{keyword}' in CV: '{cv['name']}'")
+            matches = search_function(cv['normalized_text'], keyword)
+            if matches:
+                current_cv_keyword_counts[keyword] = len(matches)
+                current_cv_matched_keywords.add(keyword)
+                if keyword in keywords_to_fuzzy_check:
+                    keywords_to_fuzzy_check.remove(keyword)
+        exact_time = time.perf_counter() - exact_start
 
     fuzzy_time = 0
-    if keywords_to_fuzzy_check:
+    if keywords_to_fuzzy_check and algorithm != 'AC':
         fuzzy_start = time.perf_counter()
         for keyword in keywords_to_fuzzy_check:
             print(f"Processing fuzzy keyword: '{keyword}' in CV: '{cv['name']}'")
