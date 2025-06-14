@@ -1,15 +1,28 @@
 import flet as ft
 from . import utils
+from ..backend.extract_summary import parse_resume, print_parse_result
+from ..backend.pdf_to_string import pdf_to_string
+from ..backend.fetch_from_db import get_applicant_by_cv_path
 
 class Summary:
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, state: dict):
         self.page = page
+        self.state = state
         self.page.title = "CV Analyzer App by HRProfesional"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
 
     def build_ui(self):
+        selected_cv = self.state.get("selected_cv")
+        if not selected_cv:
+            return ft.View(
+                route="/summary",
+                bgcolor=self.page.bgcolor,
+                controls=[
+                    ft.Text("No CV selected. Please select a CV from the home page.", color="#FAF7F0", size=24, weight=ft.FontWeight.BOLD)
+                ]
+            )
         # Header Section
         def on_home_click(e):
             self.page.go("/home")
@@ -109,10 +122,18 @@ class Summary:
             "Software Engineer at XYZ Corp (2019-Present)\nProject Manager at ABC Ltd (2016-2019)",
             "Bachelor of Science in Computer Science, University of Technology (2012-2016)"
         ]
-        cv_summary_grid.controls.append(create_cv_summary_card("SUMMARY", example_summary[0]))
-        cv_summary_grid.controls.append(create_cv_summary_card("SKILLS", example_summary[1]))
-        cv_summary_grid.controls.append(create_cv_summary_card("EXPERIENCE", example_summary[2]))
-        cv_summary_grid.controls.append(create_cv_summary_card("EDUCATION", example_summary[3]))
+
+        cv_path = self.state['selected_cv']['path']
+        if not cv_path:
+            return ft.View(route="/summary", controls=[ft.Text("No search results yet!")])
+        text = pdf_to_string(cv_path)
+        parsed_text = parse_resume(text)
+        profile = get_applicant_by_cv_path(cv_path)
+
+        cv_summary_grid.controls.append(create_cv_summary_card("SUMMARY", parsed_text['summary']))
+        cv_summary_grid.controls.append(create_cv_summary_card("SKILLS", parsed_text['skills']))
+        cv_summary_grid.controls.append(create_cv_summary_card("EXPERIENCE", parsed_text['experience']))
+        cv_summary_grid.controls.append(create_cv_summary_card("EDUCATION", parsed_text['education']))
         
         right_panel_content = ft.Container(
             content=ft.Column(
@@ -158,6 +179,7 @@ class Summary:
 
         return ft.View(
             route="/summary",
+            bgcolor=self.page.bgcolor,
             controls=[
                 ft.Column(
                     [
@@ -172,8 +194,17 @@ class Summary:
 def main(page: ft.Page):
     summary = Summary(page)
     page.views.append(summary.build_ui())
-    page.bgcolor = '#395B9D'
+    # page.bgcolor = '#395B9D'
     page.update()
+    # home = home(page)
+    # output = home.search_output
+    # cv_path = output['results']['path']
+    # text = pdf_to_string(cv_path)
+    # parsed_text = parse_resume(text)
+    # profile = get_applicant_by_cv_path(cv_path)
+
+    # print_parse_result(parsed_text)
+    # print(profile)
 
 if __name__ == "__main__":
     ft.app(target=main)

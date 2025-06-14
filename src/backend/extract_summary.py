@@ -72,6 +72,41 @@ def extract_education(text):
     return [ln.strip() for ln in education_raw.splitlines() if ln.strip()]
 
 def parse_resume(text):
+    # skills = extract_skills(text)
+    # summary = extract_summary(text)
+    # experience = extract_experience(text)
+    # education = extract_education(text)
+
+    # skills_output = ""
+    # for skill in skills:
+    #     skills_output += f"• {skill}\n"
+    # skills_output += "\n"
+
+    # summary_output = ""
+    # for sum in summary:
+    #     summary_output += f"{sum}"
+    # summary_output += "\n"
+
+    # experience_output = ""
+    # for job in experience:
+    #     experience_output += f"\n{job['date_range']}\n"
+    #     experience_output += f"{job['company']}\n"
+    #     if job['location']:
+    #         experience_output += f"{job['location']}\n"
+    #     if job['job_title']:
+    #         experience_output += f"{job['job_title']}\n"
+        
+    #     if job['responsibilities']:
+    #         experience_output += "Responsibilities:\n"
+    #         for resp in job['responsibilities']:
+    #             experience_output += f"   • {resp}\n"
+    #     experience_output += "\n\n"
+
+    # education_output = ""
+    # for ed in education:
+    #     education_output += f"• {ed}\n"
+    # education_output += "\n"
+
     result = {
         'skills': extract_skills(text),
         'summary': extract_summary(text),

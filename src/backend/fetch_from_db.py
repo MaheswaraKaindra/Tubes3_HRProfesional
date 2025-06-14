@@ -1,6 +1,13 @@
 import mysql.connector, string
 
-def get_applicant_by_cv_path(cv_path: string, db: dict):
+def get_applicant_by_cv_path(cv_path: string):
+    db = {
+        "host":     "localhost",
+        "user":     "root",
+        "password": "meteor",
+        "database": "HRProfesional_schema",
+        "charset":  "utf8mb4"
+    }
     try:
         connection_configs = [
             {**db, "auth_plugin": "mysql_native_password", "use_pure": True},
@@ -36,6 +43,7 @@ def get_applicant_by_cv_path(cv_path: string, db: dict):
         cur.close()
         conn.close()
 
+        result_row = []
         if result:
             for row in result:
                 print("Data Pelamar:")
@@ -46,10 +54,18 @@ def get_applicant_by_cv_path(cv_path: string, db: dict):
                 print(f"No. HP: {row['phone_number']}")
                 print(f"Role: {row['application_role']}")
                 print(f"CV Path: {row['cv_path']}")
-            return result
+                result_row.append(row['applicant_id'])
+                result_row.append(row['first_name'] + " " + row['last_name'])
+                result_row.append(row['date_of_birth'])
+                result_row.append(row['address'])
+                result_row.append(row['phone_number'])
+                result_row.append(row['application_role'])
+                result_row.append(row['cv_path'])
+            print(result_row)
+            return result_row
         else:
             print(f"Tidak ditemukan pelamar dengan path {cv_path}")
-            return None
+            return []
 
     except mysql.connector.Error as err:
         print(f"Kesalahan Database: {err}")
@@ -57,11 +73,4 @@ def get_applicant_by_cv_path(cv_path: string, db: dict):
         print(f"Kesalahan lain: {e}")
 
 if __name__ == "__main__":
-    db = {
-        "host":     "localhost",
-        "user":     "root",
-        "password": "meteor",
-        "database": "HRProfesional_schema",
-        "charset":  "utf8mb4"
-    }
-    get_applicant_by_cv_path(r"data\Teacher\17311685.pdf", db)
+    get_applicant_by_cv_path(r"data\Teacher\17311685.pdf")
