@@ -90,8 +90,8 @@ def process_pdf(pdf_path: str, db: dict):
 if __name__ == "__main__":
     db = {
         "host":     "localhost",
-        "user":     "root",
-        "password": "meteor",
+        "user":     "hr_admin",
+        "password": "",
         "database": "HRProfesional_schema",
         "charset":  "utf8mb4"
     }
