@@ -2,14 +2,24 @@ import flet as ft
 from . import utils
 
 class Summary:
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, state: dict):
         self.page = page
+        self.state = state
         self.page.title = "CV Analyzer App by HRProfesional"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
 
     def build_ui(self):
+        selected_cv = self.state.get("selected_cv")
+        if not selected_cv:
+            return ft.View(
+                route="/summary",
+                bgcolor=self.page.bgcolor,
+                controls=[
+                    ft.Text("No CV selected. Please select a CV from the home page.", color="#FAF7F0", size=24, weight=ft.FontWeight.BOLD)
+                ]
+            )
         # Header Section
         def on_home_click(e):
             self.page.go("/home")
@@ -158,6 +168,7 @@ class Summary:
 
         return ft.View(
             route="/summary",
+            bgcolor=self.page.bgcolor,
             controls=[
                 ft.Column(
                     [
@@ -172,7 +183,7 @@ class Summary:
 def main(page: ft.Page):
     summary = Summary(page)
     page.views.append(summary.build_ui())
-    page.bgcolor = '#395B9D'
+    # page.bgcolor = '#395B9D'
     page.update()
 
 if __name__ == "__main__":
