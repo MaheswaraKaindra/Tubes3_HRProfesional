@@ -63,11 +63,14 @@ class Summary:
 
         def on_summary_click(cv_data):
             self.state["selected_cv"] = cv_data
-            self.page.views.append(Summary(self.page, self.state).build_ui())
+            # self.page.views.append(Summary(self.page, self.state).build_ui())
             self.page.go("/summary")
 
         def on_view_cv_click(e):
-            self.page.clean()
+            self.state["selected_cv"] = cv_data
+            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+
+            self.page.go("/cv")
 
         for cv_data in self.state.get("search_results", []):
             if cv_data.get("path") != selected_cv.get("path"):
@@ -211,8 +214,8 @@ class Summary:
         # Main Layout
         main_layout = ft.Row(
             [
-                ft.Container(left_panel_content, expand=1, padding=5), # Panel kiri mengambil 2 bagian
-                ft.Container(right_panel_content, expand=5, padding=5), # Panel kanan mengambil 3 bagian
+                ft.Container(left_panel_content, expand=1, padding=5), 
+                ft.Container(right_panel_content, expand=5, padding=5),
             ],
             vertical_alignment=ft.CrossAxisAlignment.START,
             expand=True
