@@ -39,4 +39,4 @@ def main(page: ft.Page):
     page.go(page.route or "/home")
 
 if __name__ == "__main__":
-    ft.app(target=main, view=ft.AppView.FLET_APP)
+    ft.app(target=main)
