@@ -68,8 +68,9 @@ class Home:
                 [
                     ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
                     ft.Container(width=20),
-                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
-                    # might add more
+                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
+                    ft.Container(width=20),
+                    ft.Radio(value="AC", label="Aho-Corasick", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
                 ],
                 alignment=ft.MainAxisAlignment.START,
             )
