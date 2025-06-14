@@ -12,7 +12,6 @@ class Summary:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
-        self.search_output = search_output
 
     def build_ui(self):
         selected_cv = self.state.get("selected_cv")
@@ -124,7 +123,7 @@ class Summary:
             "Bachelor of Science in Computer Science, University of Technology (2012-2016)"
         ]
 
-        cv_path = self.state['current_cv']['path']
+        cv_path = self.state['selected_cv']['path']
         if not cv_path:
             return ft.View(route="/summary", controls=[ft.Text("No search results yet!")])
         text = pdf_to_string(cv_path)

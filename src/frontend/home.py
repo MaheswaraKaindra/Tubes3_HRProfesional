@@ -86,6 +86,7 @@ class Home:
 
         def on_summary_click(cv_data):
             self.state["selected_cv"] = cv_data
+            self.page.views.append(Summary(self.page, self.state).build_ui())
             self.page.go("/summary")
 
         def on_view_cv_click(e):
@@ -197,8 +198,9 @@ class Home:
         )
 
         # Right Panel - Results
-        def on_summary_click(e):
-            self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
+        def on_summary_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            # self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
             self.page.go("/summary")
 
         def on_view_cv_click(e):
