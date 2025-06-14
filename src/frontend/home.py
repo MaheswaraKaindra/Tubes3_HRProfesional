@@ -5,6 +5,7 @@ from . import utils
 from .summary import Summary
 
 from src.backend import search_controller
+from src.data.setup_database import setup_database
 
 
 class Home:
@@ -16,6 +17,7 @@ class Home:
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
         self.build_ui()
+        setup_database()
         search_controller.load_cv_data("data")
 
         # Global variables for search

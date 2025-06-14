@@ -2,10 +2,54 @@
 
 import os
 import time
+import mysql.connector
 from .pdf_to_string import pdf_to_string, normalize_text
 from .knuth_morris_pratt import knuth_morris_pratt
 from .boyer_moore import boyer_moore
 from .search_logic import find_fuzzy_matches
+
+def get_db_connection():
+    try:
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="hr_admin",
+            password="",
+            database="HRProfesional_schema"
+        )
+        return connection
+    except mysql.connector.Error as e:
+        print(f"Database connection error: {e}")
+        return None
+    
+def get_path_to_name_map():
+    path_map = {}
+    connection = get_db_connection()
+    if not connection: return path_map
+    
+    cursor = connection.cursor()
+    query = """
+    SELECT 
+        p.first_name, 
+        p.last_name, 
+        d.cv_path 
+    FROM 
+        ApplicantProfile p 
+    JOIN 
+        ApplicationDetail d ON p.applicant_id = d.applicant_id
+    WHERE 
+        d.cv_path IS NOT NULL;
+    """
+    try:
+        cursor.execute(query)
+        for first_name, last_name, cv_path in cursor.fetchall():
+            normalized_path = cv_path.replace('\\', '/').lower()
+            path_map[normalized_path] = f"{first_name} {last_name}"
+    except mysql.connector.Error as e:
+        print(f"Error fetching names from DB: {e}")
+    finally:
+        cursor.close()
+        connection.close()
+    return path_map
 
 _cv_data_cache = []
 
@@ -18,10 +62,17 @@ def process_pdf(file_tuple):
     file, file_path = file_tuple
     print(f"Processing file: {file}")
     raw_text = pdf_to_string(file_path)
+    name_map = get_path_to_name_map()
+    try:
+        data_index = file_path.lower().rindex('data/')
+        relative_path = file_path[data_index:].replace('\\', '/').lower()
+    except ValueError:
+        relative_path = file_path.replace('\\', '/').lower()
+    db_name = name_map.get(relative_path)
     if raw_text:
         return {
             'path': file_path,
-            'name': os.path.splitext(file)[0],
+            'name': db_name if db_name else os.path.splitext(file)[0],
             'raw_text': raw_text,
             'normalized_text': normalize_text(raw_text)
         }
