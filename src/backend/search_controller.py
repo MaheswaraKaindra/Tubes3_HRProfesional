@@ -47,6 +47,7 @@ def load_cv_data(directory: str):
     print(f"Loaded {len(_cv_data_cache)} CVs.")
 
 def search_cv_data(keywords: list[str], algorithm: str, top_n: int, fuzzy_threshold: float = 80.0) -> dict:
+    start_time = time.perf_counter()
     search_function = knuth_morris_pratt if algorithm == 'KMP' else boyer_moore
     clean_keywords = {k.strip().lower() for k in keywords if k.strip()}
     
@@ -74,9 +75,13 @@ def search_cv_data(keywords: list[str], algorithm: str, top_n: int, fuzzy_thresh
             for keyword in keywords_to_fuzzy_check:
                 fuzzy_matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
                 if fuzzy_matches:
-                    best_match = fuzzy_matches[0]
-                    match_key = f"{keyword} (Mirip: {best_match['word']})"
-                    current_cv_keyword_counts[match_key] = f"{best_match['similarity']}%"
+                    best_match_word = fuzzy_matches[0]['word']
+                    
+                    frequency_of_best_match = len(search_function(cv['normalized_text'], best_match_word))
+
+                    match_key = f"{keyword} → {best_match_word}"
+                    
+                    current_cv_keyword_counts[match_key] = frequency_of_best_match
                     current_cv_matched_keywords.add(keyword)
             total_fuzzy_time += time.perf_counter() - fuzzy_start
         
@@ -87,7 +92,9 @@ def search_cv_data(keywords: list[str], algorithm: str, top_n: int, fuzzy_thresh
                 'keyword_counts': current_cv_keyword_counts,
                 'relevance_score': len(current_cv_matched_keywords)
             })
+
     sorted_results = sorted(all_cv_results, key=lambda x: x['relevance_score'], reverse=True)
+    print(f"Found {len(sorted_results)} CVs matching the keywords.")
 
     return {
         'results': sorted_results,
