@@ -1,5 +1,4 @@
 import flet as ft
-from . import home
 
 class About:
     def __init__(self, page: ft.Page):
@@ -33,7 +32,7 @@ class About:
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            width=self.page.window_width,
+            width=self.page.window.width,
             bgcolor='#395B9D',
             padding=ft.padding.symmetric(horizontal=20, vertical=15),
             alignment=ft.alignment.center_left
