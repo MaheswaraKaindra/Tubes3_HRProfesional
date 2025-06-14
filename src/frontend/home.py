@@ -8,8 +8,9 @@ from src.backend import search_controller
 
 
 class Home:
-    def __init__(self, page: ft.Page):
+    def __init__(self, page: ft.Page, state: dict):
         self.page = page
+        self.state = state
         self.page.title = "CV Analyzer App by HRProfesional"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
@@ -22,7 +23,6 @@ class Home:
         self.algorithm = "BM"
 
     def build_ui(self):
-        self.search_output = None
         # Header Section
         def on_about_us_click(e):
             self.page.go("/about")
@@ -84,8 +84,36 @@ class Home:
         # self.loading_indicator = ft.ProgressRing(width=20, height=20, stroke_width=2, visible=True)
         self.search_button_text = "Search"
 
-        def on_search_click(e):
+        def on_summary_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            self.page.go("/summary")
 
+        def on_view_cv_click(e):
+            self.page.clean()
+
+        def update_ui_from_state():
+            results_info_text.value = self.state["last_info_text"]
+            cv_results_grid.controls.clear()
+
+            if not self.state["search_results"]:
+                print("No search results found.")
+                cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
+            else:
+                for cv_data in self.state["search_results"]:
+                    summary_handler = lambda _, cv=cv_data: on_summary_click(cv)
+
+                    cv_results_grid.controls.append(
+                        utils.create_cv_card(self.page, 
+                            cv_data["name"], 
+                            cv_data["keyword_counts"], 
+                            on_summary_click=summary_handler, 
+                            on_view_cv_click=on_view_cv_click
+                        )
+                    )
+            self.page.update()
+
+        self.search_output = None
+        def on_search_click(e):
             # 1. Ambil input dari UI
             keywords_str = self.keywords_input.value
             if not keywords_str:
@@ -100,29 +128,29 @@ class Home:
 
             # 2. Panggil controller backend
             self.search_output = search_controller.search_cv_data(keywords, algorithm, top_n, fuzzy_threshold=80.0)
+            self.state["search_results"] = self.search_output['results'][:top_n]
+            self.state["last_info_text"] = f"{self.search_output['scan_count']} CVs scanned in {self.search_output['exact_time'] + self.search_output['fuzzy_time']:.2f} ms"
 
             # 3. Update UI dengan hasil pencarian
-            cv_results_grid.controls.clear() # Bersihkan hasil sebelumnya
+            update_ui_from_state()
+            # total_time = self.search_output.get('exact_time', 0) + self.search_output.get('fuzzy_time', 0)
+            # results_info_text.value = f"{self.search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
 
-            # Update teks info
-            total_time = self.search_output.get('exact_time', 0) + self.search_output.get('fuzzy_time', 0)
-            results_info_text.value = f"{self.search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
+            # top_results = self.search_output['results'][:top_n]
 
-            top_results = self.search_output['results'][:top_n]
-
-            if not top_results:
-                cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
-            else:
-                for cv_data in top_results:
-                    cv_results_grid.controls.append(
-                        utils.create_cv_card(self.page, 
-                                             cv_data["name"], 
-                                             cv_data["keyword_counts"], 
-                                             on_summary_click=on_summary_click, 
-                                             on_view_cv_click=on_view_cv_click)
-                    )
+            # if not top_results:
+            #     cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
+            # else:
+            #     for cv_data in top_results:
+            #         cv_results_grid.controls.append(
+            #             utils.create_cv_card(self.page, 
+            #                                  cv_data["name"], 
+            #                                  cv_data["keyword_counts"], 
+            #                                  on_summary_click=on_summary_click, 
+            #                                  on_view_cv_click=on_view_cv_click)
+            #         )
             
-            self.page.update()
+            # self.page.update()
 
 
         self.search_button = ft.ElevatedButton( # search button
@@ -170,7 +198,7 @@ class Home:
 
         # Right Panel - Results
         def on_summary_click(e):
-            self.page.views.append(Summary(self.page, self.search_output).build_ui())
+            self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
             self.page.go("/summary")
 
         def on_view_cv_click(e):
@@ -187,6 +215,8 @@ class Home:
             padding=10,
             # expand=True
         )
+
+        update_ui_from_state()
 
         right_panel_content = ft.Container(
             content=ft.Column(

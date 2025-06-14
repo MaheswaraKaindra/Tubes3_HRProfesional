@@ -42,7 +42,7 @@ def create_cv_card(page:ft.Page, name, results, on_summary_click=None, on_view_c
         page.update()
 
     # result adalah dictionary dengan keyword sebagai key dan jumlah kemunculan sebagai value
-    total_matches = sum(v for v in results.values() if isinstance(v, int))
+    total_matches = sum(count for count in results.values() if isinstance(count, int))
     matched_keywords_text = ft.Container(
         content=ft.Text(f"Matched keywords:", size=12, weight=ft.FontWeight.W_500, color="#000000"),
         on_click=details_dialog,

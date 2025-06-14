@@ -5,8 +5,9 @@ from ..backend.pdf_to_string import pdf_to_string
 from ..backend.fetch_from_db import get_applicant_by_cv_path
 
 class Summary:
-    def __init__(self, page: ft.Page, search_output):
+    def __init__(self, page: ft.Page, state: dict):
         self.page = page
+        self.state = state
         self.page.title = "CV Analyzer App by HRProfesional"
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
@@ -14,6 +15,15 @@ class Summary:
         self.search_output = search_output
 
     def build_ui(self):
+        selected_cv = self.state.get("selected_cv")
+        if not selected_cv:
+            return ft.View(
+                route="/summary",
+                bgcolor=self.page.bgcolor,
+                controls=[
+                    ft.Text("No CV selected. Please select a CV from the home page.", color="#FAF7F0", size=24, weight=ft.FontWeight.BOLD)
+                ]
+            )
         # Header Section
         def on_home_click(e):
             self.page.go("/home")
@@ -114,8 +124,8 @@ class Summary:
             "Bachelor of Science in Computer Science, University of Technology (2012-2016)"
         ]
 
-        cv_path = self.search_output['results'][0]['path']
-        if not self.search_output:
+        cv_path = self.state['current_cv']['path']
+        if not cv_path:
             return ft.View(route="/summary", controls=[ft.Text("No search results yet!")])
         text = pdf_to_string(cv_path)
         parsed_text = parse_resume(text)
@@ -170,6 +180,7 @@ class Summary:
 
         return ft.View(
             route="/summary",
+            bgcolor=self.page.bgcolor,
             controls=[
                 ft.Column(
                     [
@@ -184,7 +195,7 @@ class Summary:
 def main(page: ft.Page):
     summary = Summary(page)
     page.views.append(summary.build_ui())
-    page.bgcolor = '#395B9D'
+    # page.bgcolor = '#395B9D'
     page.update()
     # home = home(page)
     # output = home.search_output

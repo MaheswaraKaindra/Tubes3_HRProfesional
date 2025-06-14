@@ -40,83 +40,87 @@ def load_cv_data(directory: str):
                 file_path = os.path.join(root, file)
                 pdf_files.append((file, file_path))
 
-    with concurrent.futures.ProcessPoolExecutor() as executor:
+    import multiprocessing
+    cpu_count = multiprocessing.cpu_count()
+    with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_count) as executor:
         results = list(executor.map(process_pdf, pdf_files))
         _cv_data_cache.extend([r for r in results if r is not None])
 
     print(f"Loaded {len(_cv_data_cache)} CVs.")
 
+def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
+    search_function = knuth_morris_pratt if algorithm == 'KMP' else boyer_moore
+    current_cv_keyword_counts = {}
+    current_cv_matched_keywords = set()
+    keywords_to_fuzzy_check = set(clean_keywords)
+
+    exact_start = time.perf_counter()
+    for keyword in clean_keywords:
+        print(f"Processing keyword: '{keyword}' in CV: '{cv['name']}'")
+        matches = search_function(cv['normalized_text'], keyword)
+        if matches:
+            current_cv_keyword_counts[keyword] = len(matches)
+            current_cv_matched_keywords.add(keyword)
+            if keyword in keywords_to_fuzzy_check:
+                keywords_to_fuzzy_check.remove(keyword)
+    exact_time = time.perf_counter() - exact_start
+
+    fuzzy_time = 0
+    if keywords_to_fuzzy_check:
+        fuzzy_start = time.perf_counter()
+        for keyword in keywords_to_fuzzy_check:
+            print(f"Processing fuzzy keyword: '{keyword}' in CV: '{cv['name']}'")
+            fuzzy_matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
+            if fuzzy_matches:
+                best_match_word = fuzzy_matches[0]['word']
+                frequency_of_best_match = len(search_function(cv['normalized_text'], best_match_word))
+                match_key = f"{keyword} → {best_match_word}"
+                current_cv_keyword_counts[match_key] = frequency_of_best_match
+                current_cv_matched_keywords.add(keyword)
+        fuzzy_time = time.perf_counter() - fuzzy_start
+
+    if current_cv_matched_keywords:
+        return {
+            'name': cv['name'],
+            'path': cv['path'],
+            'keyword_counts': current_cv_keyword_counts,
+            'relevance_score': len(current_cv_matched_keywords),
+            'exact_time': exact_time,
+            'fuzzy_time': fuzzy_time
+        }
+    else:
+        return None
+
+def _process_cv_wrapper(args):
+    cv, clean_keywords, algorithm, fuzzy_threshold = args
+    return process_cv(cv, clean_keywords, algorithm, fuzzy_threshold)
+
 def search_cv_data(keywords: list[str], algorithm: str, top_n: int, fuzzy_threshold: float = 80.0) -> dict:
     start_time = time.perf_counter()
-    search_function = knuth_morris_pratt if algorithm == 'KMP' else boyer_moore
     clean_keywords = {k.strip().lower() for k in keywords if k.strip()}
 
-    exact_results = {}
-    keywords_with_no_exact_match = set(clean_keywords)
+    all_cv_results = []
+    total_exact_time = 0
+    total_fuzzy_time = 0
 
-    for cv in _cv_data_cache:
-        cv_path = cv['path']
-        current_cv_matches = {}
-        for keyword in clean_keywords:
-            matches = search_function(cv['normalized_text'], keyword)
-            if matches:
-                current_cv_matches[keyword] = len(matches)
-                if keyword in keywords_with_no_exact_match:
-                    keywords_with_no_exact_match.remove(keyword)
-        
-        if current_cv_matches:
-            exact_results[cv_path] = {
-                'name': cv['name'], 'path': cv['path'],
-                'keyword_counts': current_cv_matches,
-                'relevance_score': len(current_cv_matches)
-            }
-    
-    exact_match_time = (time.perf_counter() - start_time) * 1000
+    import concurrent.futures
+    # Prepare arguments for each CV
+    args_list = [(cv, clean_keywords, algorithm, fuzzy_threshold) for cv in _cv_data_cache]
 
-    sorted_exact_results = sorted(exact_results.values(), key=lambda x: x['relevance_score'], reverse=True)
+    with concurrent.futures.ProcessPoolExecutor() as executor:
+        results = list(executor.map(_process_cv_wrapper, args_list))
+        for res in results:
+            if res is not None:
+                all_cv_results.append(res)
+                total_exact_time += res.get('exact_time', 0)
+                total_fuzzy_time += res.get('fuzzy_time', 0)
 
-    final_results = sorted_exact_results
-    fuzzy_match_time = 0.0
-
-    needs_fuzzy_search = bool(keywords_with_no_exact_match) or (len(final_results) < top_n)
-    
-    if needs_fuzzy_search:
-        fuzzy_start_time = time.perf_counter()
-        
-        exact_result_paths = {res['path'] for res in final_results}
-        cvs_for_fuzzy = [cv for cv in _cv_data_cache if cv['path'] not in exact_result_paths]
-        
-        keywords_for_fuzzy = clean_keywords.union(keywords_with_no_exact_match)
-
-        fuzzy_results = {}
-        for cv in cvs_for_fuzzy:
-            cv_path = cv['path']
-            current_cv_fuzzy_matches = {}
-            for keyword in keywords_for_fuzzy:
-                matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
-                if matches:
-                    match_key = f"{keyword} (fuzzy)"
-                    best_match = matches[0]
-                    current_cv_fuzzy_matches[match_key] = f"{best_match['word']} ({best_match['similarity']:.1f}%)"
-            
-            if current_cv_fuzzy_matches:
-                fuzzy_results[cv_path] = {
-                    'name': cv['name'], 'path': cv['path'],
-                    'keyword_counts': current_cv_fuzzy_matches,
-                    'relevance_score': len(current_cv_fuzzy_matches)
-                }
-        
-        sorted_fuzzy_results = sorted(fuzzy_results.values(), key=lambda x: x['relevance_score'], reverse=True)
-        
-        if len(final_results) < top_n:
-            needed = top_n - len(final_results)
-            final_results.extend(sorted_fuzzy_results[:needed])
-
-        fuzzy_match_time = (time.perf_counter() - fuzzy_start_time) * 1000
+    sorted_results = sorted(all_cv_results, key=lambda x: x['relevance_score'], reverse=True)
+    print(f"Found {len(sorted_results)} CVs matching the keywords.")
 
     return {
-        'results': final_results,
+        'results': sorted_results,
         'scan_count': len(_cv_data_cache),
-        'exact_time': exact_match_time,
-        'fuzzy_time': fuzzy_match_time
+        'exact_time': total_exact_time * 1000,
+        'fuzzy_time': total_fuzzy_time * 1000
     }

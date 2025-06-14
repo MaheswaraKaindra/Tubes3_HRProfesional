@@ -8,6 +8,11 @@ from src.frontend.home import Home
 from src.frontend.about import About
 from src.frontend.summary import Summary
 
+app_state = {
+    "search_results": [],
+    "last_info_text": "",
+    "selected_cv": None,
+}
 
 def main(page: ft.Page):
     page.title = "CV Analyzer App by HRProfesional"
@@ -28,9 +33,9 @@ def main(page: ft.Page):
     }
 
     pages = {
-        "/home": Home(page),
+        "/home": Home(page, app_state),
         "/about": About(page),
-        "/summary": Summary(page, search_output)
+        "/summary": Summary(page, app_state)
     }
 
     def route_change(route):
