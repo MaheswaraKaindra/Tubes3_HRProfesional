@@ -60,26 +60,38 @@ class Summary:
             # padding=10,
             expand=True
         )
-        # Tambahkan beberapa contoh kartu ke grid
-        example_cvs = [
-            {"name": "Efrina",       "keyword_counts": {"Java": 2, "Python": 2}},
-            {"name": "Budi Santoso", "keyword_counts": {"JavaScript": 1, "React": 1, "Node.js": 1, "SQL": 1}},
-            {"name": "Citra Ayu",    "keyword_counts": {"Data Analysis": 2, "SQL": 2, "Tableau": 1}},
-            {"name": "David Lee",    "keyword_counts": {"Marketing": 1, "SEO": 1}},
-        ]
 
-        for cv_data in example_cvs:
-            cv_results_grid.controls.append(utils.create_cv_card(self.page, cv_data["name"], cv_data["keyword_counts"]))
+        def on_summary_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            self.page.views.append(Summary(self.page, self.state).build_ui())
+            self.page.go("/summary")
+
+        def on_view_cv_click(e):
+            self.page.clean()
+
+        for cv_data in self.state.get("search_results", []):
+            if cv_data.get("path") != selected_cv.get("path"):
+                summary_handler = lambda _, cv=cv_data: on_summary_click(cv)
+                cv_results_grid.controls.append(
+                    utils.create_cv_card(self.page, 
+                        cv_data["name"], 
+                        cv_data["keyword_counts"], 
+                        on_summary_click=summary_handler, 
+                        on_view_cv_click=on_view_cv_click
+                    )
+                )
 
         left_panel_content = ft.Container(
             content=ft.Column(
-                [   
+                [ 
+                    ft.Text("Other CVs", size=20, weight=ft.FontWeight.BOLD, color="#DEE2E2", text_align=ft.TextAlign.CENTER),
+                    # ft.Divider(height=1, color="#000000"),
                     cv_results_grid,
                 ],
                 spacing=5,
                 expand=True
             ),
-            # bgcolor="#DEE2E2",
+            bgcolor="#395B9D",
             # padding=ft.padding.all(25),
             # border_radius=ft.border_radius.all(10),
             # margin=ft.margin.all(10),
@@ -116,20 +128,42 @@ class Summary:
             # padding=10
         )
 
-        example_summary = [
-            "A highly motivated and results-driven professional with a strong background in software development and project management. Proven ability to lead teams and deliver high-quality solutions on time and within budget.",
-            "Python, Java, C++, Project Management, Agile Methodologies, Team Leadership",
-            "Software Engineer at XYZ Corp (2019-Present)\nProject Manager at ABC Ltd (2016-2019)",
-            "Bachelor of Science in Computer Science, University of Technology (2012-2016)"
-        ]
-
-        cv_path = self.state['selected_cv']['path']
+        cv_path = selected_cv.get("path")
         if not cv_path:
             return ft.View(route="/summary", controls=[ft.Text("No search results yet!")])
-        text = pdf_to_string(cv_path)
-        parsed_text = parse_resume(text)
-        profile = get_applicant_by_cv_path(cv_path)
+        text = pdf_to_string(cv_path) if cv_path else ""
+        parsed_text = parse_resume(text) if text else {}
+        profile = get_applicant_by_cv_path(cv_path) if cv_path else {}
+        # for row in profile:
+        #     print(f"{row}: {profile[row]}")
 
+
+        profile_card = ft.Card(
+            height=200,
+            content=ft.Container(
+                content=ft.Column(
+                    [   
+                        ft.Text("PROFILE", size=20, weight=ft.FontWeight.BOLD, color="#000000", text_align=ft.TextAlign.CENTER),
+                        ft.Divider(height=1, color="#000000"),
+                        ft.Text(f"Name: {profile[1]} {profile[2]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                        ft.Text(f"Date of Birth: {profile[3]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                        ft.Text(f"Address: {profile[4]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                        ft.Text(f"Phone Number: {profile[5]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                        ft.Text(f"Role: {profile[6]} \n", size=12, color="#000000", text_align=ft.TextAlign.LEFT),
+                    ],
+                    spacing=5,
+                    horizontal_alignment=ft.CrossAxisAlignment.START,
+                    scroll=ft.ScrollMode.AUTO,
+                    expand=True,
+                ),
+                padding=ft.padding.all(20),
+                alignment=ft.alignment.top_left,
+                bgcolor="#FFFFFF",
+                border_radius=8,
+            ),
+        )
+
+        cv_summary_grid.controls.append(profile_card)
         cv_summary_grid.controls.append(create_cv_summary_card("SUMMARY", parsed_text['summary']))
         cv_summary_grid.controls.append(create_cv_summary_card("SKILLS", parsed_text['skills']))
         cv_summary_grid.controls.append(create_cv_summary_card("EXPERIENCE", parsed_text['experience']))

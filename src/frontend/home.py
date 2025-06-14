@@ -134,25 +134,6 @@ class Home:
 
             # 3. Update UI dengan hasil pencarian
             update_ui_from_state()
-            # total_time = self.search_output.get('exact_time', 0) + self.search_output.get('fuzzy_time', 0)
-            # results_info_text.value = f"{self.search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
-
-            # top_results = self.search_output['results'][:top_n]
-
-            # if not top_results:
-            #     cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
-            # else:
-            #     for cv_data in top_results:
-            #         cv_results_grid.controls.append(
-            #             utils.create_cv_card(self.page, 
-            #                                  cv_data["name"], 
-            #                                  cv_data["keyword_counts"], 
-            #                                  on_summary_click=on_summary_click, 
-            #                                  on_view_cv_click=on_view_cv_click)
-            #         )
-            
-            # self.page.update()
-
 
         self.search_button = ft.ElevatedButton( # search button
             self.search_button_text,
