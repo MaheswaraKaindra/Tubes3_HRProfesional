@@ -1,5 +1,5 @@
 import flet as ft
-from . import utils
+import utils
 
 class Summary:
     def __init__(self, page: ft.Page):
@@ -33,7 +33,7 @@ class Summary:
                 ],
                 vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            width=self.page.window_width,
+            width=self.page.window.width,
             bgcolor='#395B9D',
             padding=ft.padding.symmetric(horizontal=20, vertical=15),
             alignment=ft.alignment.center_left
@@ -168,3 +168,12 @@ class Summary:
                 )
             ]
         )
+
+def main(page: ft.Page):
+    summary = Summary(page)
+    page.views.append(summary.build_ui())
+    page.bgcolor = '#395B9D'
+    page.update()
+
+if __name__ == "__main__":
+    ft.app(target=main)
