@@ -1,7 +1,7 @@
 import flet as ft
 import threading
 
-from . import about, summary, utils
+from . import utils
 
 from src.backend import search_controller
 
@@ -20,21 +20,8 @@ class Home:
         self.keywords = []
         self.algorithm = "BM"
 
-        thread = threading.Thread(target=self.load_data_from_backend, daemon=True)
-        thread.start()
-
-    def load_data_from_backend(self):
-        print("Loading CV data from backend...")
-        search_controller.load_cv_data("data")
-        print("CV data loaded successfully.")
-
-        self.search_button.disabled = False
-        self.loading_indicator.visible = False
-        self.search_button_text.value = "Search"
-
-        self.page.update()
-
     def build_ui(self):
+        self.search_output = None
         # Header Section
         def on_about_us_click(e):
             self.page.go("/about")
@@ -93,8 +80,8 @@ class Home:
             text_style=ft.TextStyle(color="#000000")
         )
 
-        self.loading_indicator = ft.ProgressRing(width=20, height=20, stroke_width=2, visible=True)
-        self.search_button_text = ft.Text("Search")
+        # self.loading_indicator = ft.ProgressRing(width=20, height=20, stroke_width=2, visible=True)
+        self.search_button_text = "Search"
 
         def on_search_click(e):
 
@@ -111,15 +98,16 @@ class Home:
                 top_n = 10 # Default 10 jika input kosong atau tidak valid
 
             # 2. Panggil controller backend
-            search_output = search_controller.search_cv_data(keywords, algorithm)
+            self.search_output = search_controller.search_cv_data(keywords, algorithm, top_n, fuzzy_threshold=80.0)
 
             # 3. Update UI dengan hasil pencarian
             cv_results_grid.controls.clear() # Bersihkan hasil sebelumnya
 
             # Update teks info
-            results_info_text.value = f"{search_output['scan_count']} CVs scanned in {search_output['execution_time']:.2f} ms"
+            total_time = self.search_output.get('exact_time', 0) + self.search_output.get('fuzzy_time', 0)
+            results_info_text.value = f"{self.search_output['scan_count']} CVs scanned in {total_time:.2f} ms"
 
-            top_results = search_output['results'][:top_n]
+            top_results = self.search_output['results'][:top_n]
 
             if not top_results:
                 cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
@@ -137,14 +125,7 @@ class Home:
 
 
         self.search_button = ft.ElevatedButton( # search button
-            content=ft.Row(
-                [
-                    self.search_button_text,
-                    self.loading_indicator
-                ],
-                alignment=ft.MainAxisAlignment.CENTER,
-                spacing=10
-            ),
+            self.search_button_text,
             bgcolor="#FDF6EC",
             color="#395B9D",
             width=450,
@@ -153,7 +134,6 @@ class Home:
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
             on_click=on_search_click,
-            disabled=True
         )
 
 

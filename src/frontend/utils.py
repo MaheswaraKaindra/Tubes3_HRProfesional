@@ -42,7 +42,7 @@ def create_cv_card(page:ft.Page, name, results, on_summary_click=None, on_view_c
         page.update()
 
     # result adalah dictionary dengan keyword sebagai key dan jumlah kemunculan sebagai value
-    total_matches = sum(results.values())
+    total_matches = sum(v for v in results.values() if isinstance(v, int))
     matched_keywords_text = ft.Container(
         content=ft.Text(f"Matched keywords:", size=12, weight=ft.FontWeight.W_500, color="#000000"),
         on_click=details_dialog,
@@ -53,14 +53,19 @@ def create_cv_card(page:ft.Page, name, results, on_summary_click=None, on_view_c
         if (i == 3):
             keyword_texts.append(ft.Text(f"... and {len(results) - 3} more keywords", size=12, color="#000000"))
             break
-        if (count == 1):
+        if isinstance(count, int) and count == 1:
             keyword_texts.append(
                 ft.Text(f"{i+1}. {keyword}: {count} occurence", size=12, color="#000000")
             )
-        elif (count > 1):
+        elif isinstance(count, int) and count > 1:
             keyword_texts.append(
                 ft.Text(f"{i+1}. {keyword}: {count} occurences", size=12, color="#000000")
-        )
+            )
+        else:
+            # For fuzzy matches (string), show the string as is
+            keyword_texts.append(
+                ft.Text(f"{i+1}. {keyword}: {count}", size=12, color="#000000")
+            )
         
     return ft.Card(
         height = height,
