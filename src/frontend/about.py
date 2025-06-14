@@ -12,9 +12,7 @@ class About:
     def build_ui(self):
         # Header Section
         def on_home_click(e):
-            self.page.clean()
-            home_page = home.Home(self.page)
-            home_page.build_ui()
+            self.page.go("/home")
 
         self.home_button = ft.ElevatedButton(
             "Home",
@@ -79,20 +77,37 @@ class About:
             alignment=ft.alignment.center
         )
 
-        self.page.clean()
-        self.page.add(
-            ft.Column(
-                [
-                    self.header_content,
-                    ft.Container(
-                        content=panel_content,
-                        alignment=ft.alignment.center,
-                        expand=True
-                    )
-                ],
-                expand=True,
-            )
+        # self.page.clean()
+        # self.page.add(
+        #     ft.Column(
+        #         [
+        #             self.header_content,
+        #             ft.Container(
+        #                 content=panel_content,
+        #                 alignment=ft.alignment.center,
+        #                 expand=True
+        #             )
+        #         ],
+        #         expand=True,
+        #     )
+        # )
+        # self.page.update()
+
+        return ft.View(
+            route="/about",
+            controls=[
+                ft.Column(
+                    [
+                        self.header_content,
+                        ft.Container(
+                            content=panel_content,
+                            alignment=ft.alignment.center,
+                            expand=True
+                        )
+                    ],
+                    expand=True,
+                )
+            ]
         )
-        self.page.update()
 
     

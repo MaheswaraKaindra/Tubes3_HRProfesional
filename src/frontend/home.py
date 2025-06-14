@@ -1,4 +1,5 @@
 import flet as ft
+import threading
 
 from . import about, summary, utils
 
@@ -12,20 +13,31 @@ class Home:
         self.page.vertical_alignment = ft.MainAxisAlignment.START
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = '#395B9D'
+        self.build_ui()
         search_controller.load_cv_data("data")
 
         # Global variables for search
         self.keywords = []
         self.algorithm = "BM"
 
-        self.build_ui()
+        thread = threading.Thread(target=self.load_data_from_backend, daemon=True)
+        thread.start()
+
+    def load_data_from_backend(self):
+        print("Loading CV data from backend...")
+        search_controller.load_cv_data("data")
+        print("CV data loaded successfully.")
+
+        self.search_button.disabled = False
+        self.loading_indicator.visible = False
+        self.search_button_text.value = "Search"
+
+        self.page.update()
 
     def build_ui(self):
         # Header Section
         def on_about_us_click(e):
-            self.page.clean()
-            about_page = about.About(self.page)
-            about_page.build_ui()
+            self.page.go("/about")
 
         self.about_us_button = ft.ElevatedButton( # about us button
             "About Us",
@@ -81,17 +93,20 @@ class Home:
             text_style=ft.TextStyle(color="#000000")
         )
 
+        self.loading_indicator = ft.ProgressRing(width=20, height=20, stroke_width=2, visible=True)
+        self.search_button_text = ft.Text("Search")
+
         def on_search_click(e):
 
             # 1. Ambil input dari UI
-            keywords_str = keywords_input.value
+            keywords_str = self.keywords_input.value
             if not keywords_str:
                 return # Jangan lakukan apa-apa jika keyword kosong
 
             keywords = [k.strip() for k in keywords_str.split(',')]
-            algorithm = "BM" if algorithm_switch.value else "KMP"
+            algorithm = self.algorithm_options.value
             try:
-                top_n = int(num_applicants_input.value)
+                top_n = int(self.num_applicants_input.value)
             except (ValueError, TypeError):
                 top_n = 10 # Default 10 jika input kosong atau tidak valid
 
@@ -110,13 +125,26 @@ class Home:
                 cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
             else:
                 for cv_data in top_results:
-                    cv_results_grid.controls.append(create_cv_card(cv_data["name"], cv_data["keyword_counts"]))
+                    cv_results_grid.controls.append(
+                        utils.create_cv_card(self.page, 
+                                             cv_data["name"], 
+                                             cv_data["keyword_counts"], 
+                                             on_summary_click=on_summary_click, 
+                                             on_view_cv_click=on_view_cv_click)
+                    )
             
             self.page.update()
 
 
         self.search_button = ft.ElevatedButton( # search button
-            "Search",
+            content=ft.Row(
+                [
+                    self.search_button_text,
+                    self.loading_indicator
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                spacing=10
+            ),
             bgcolor="#FDF6EC",
             color="#395B9D",
             width=450,
@@ -125,6 +153,7 @@ class Home:
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
             on_click=on_search_click,
+            disabled=True
         )
 
 
@@ -160,12 +189,12 @@ class Home:
 
         # Right Panel - Results
         def on_summary_click(e):
-            self.page.clean()
-            about_page = summary.Summary(self.page)
-            about_page.build_ui()
+            self.page.go("/summary")
 
         def on_view_cv_click(e):
             self.page.clean()
+
+        results_info_text = ft.Text()
 
         cv_results_grid = ft.GridView(
             runs_count=3,
@@ -212,17 +241,30 @@ class Home:
             # expand=True
         )
 
-        self.page.clean()
-        self.page.add(
-            ft.Column(
-                [
-                    self.header_content,
-                    ft.Container(main_layout, expand=True)
-                ],
-                expand=True
-            )
+        # self.page.clean()
+        # self.page.add(
+        #     ft.Column(
+        #         [
+        #             self.header_content,
+        #             ft.Container(main_layout, expand=True)
+        #         ],
+        #         expand=True
+        #     )
+        # )
+        # self.page.update()
+
+        return ft.View(
+            route="/home",
+            controls=[
+                ft.Column(
+                    [
+                        self.header_content,
+                        ft.Container(main_layout, expand=True),
+                    ],
+                    expand=True,
+                ),
+            ],
         )
-        self.page.update()
 
 def main(page: ft.Page):
     app = Home(page)

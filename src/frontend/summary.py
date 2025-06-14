@@ -1,5 +1,5 @@
 import flet as ft
-import home, utils
+from . import home, utils
 
 class Summary:
     def __init__(self, page: ft.Page):
@@ -12,10 +12,8 @@ class Summary:
     def build_ui(self):
         # Header Section
         def on_home_click(e):
-            self.page.clean()
-            home_page = home.Home(self.page)
-            home_page.build_ui()
-
+            self.page.go("/home")
+            
         self.home_button = ft.ElevatedButton( # home button
             "Home",
             bgcolor="#FAF7F0",
@@ -146,14 +144,27 @@ class Summary:
             expand=True
         )
 
-        self.page.clean()
-        self.page.add(
-            ft.Column(
-                [
-                    self.header_content,
-                    ft.Container(main_layout, expand=True)
-                ],
-                expand=True
-            )
+        # self.page.clean()
+        # self.page.add(
+        #     ft.Column(
+        #         [
+        #             self.header_content,
+        #             ft.Container(main_layout, expand=True)
+        #         ],
+        #         expand=True
+        #     )
+        # )
+        # self.page.update()
+
+        return ft.View(
+            route="/summary",
+            controls=[
+                ft.Column(
+                    [
+                        self.header_content,
+                        ft.Container(main_layout, expand=True),
+                    ],
+                    expand=True,
+                )
+            ]
         )
-        self.page.update()
