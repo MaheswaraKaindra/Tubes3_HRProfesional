@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from src.frontend.home import Home
 from src.frontend.about import About
 from src.frontend.summary import Summary
+from src.frontend.cv import CV
 
 app_state = {
     "search_results": [],
@@ -20,30 +21,26 @@ def main(page: ft.Page):
     page.horizontal_alignment = ft.CrossAxisAlignment.START
     page.bgcolor = '#395B9D'
 
-    page.add(
-        ft.Column(
+    loading_sign = ft.Container(
+        content=ft.Column(
             [
-                ft.Container(
-                    content=ft.Column(
-                        [   
-                            ft.Container(height=50),
-                            ft.Text("Loading...", color="#FAF7F0", size=36, weight=ft.FontWeight.BOLD),
-                            ft.Container(height=10),
-                            ft.ProgressRing(width=30, height=30, stroke_width=3, color="#FAF7F0")
-                        ],
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
-                    ),
-                )
+                ft.Text("Loading...", color="#FAF7F0", size=36, weight=ft.FontWeight.BOLD),
+                ft.Container(height=10),
+                ft.ProgressRing(width=30, height=30, stroke_width=3, color="#FAF7F0")
             ],
-            alignment=ft.alignment.center,
-        )
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        ),
+        expand=True
     )
+    page.add(loading_sign)
 
 
     pages = {
         "/home": Home(page, app_state),
         "/about": About(page),
-        "/summary": Summary(page, app_state)
+        "/summary": Summary(page, app_state),
+        "/cv": CV(page, app_state)
     }
 
     def route_change(route):
@@ -64,4 +61,6 @@ def main(page: ft.Page):
     page.go(page.route or "/home")
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    assets_folder_path = "assets"
+
+    ft.app(target=main, assets_dir=assets_folder_path,)
