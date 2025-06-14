@@ -43,6 +43,7 @@ def get_applicant_by_cv_path(cv_path: string):
         cur.close()
         conn.close()
 
+        result_row = []
         if result:
             for row in result:
                 print("Data Pelamar:")
@@ -53,10 +54,18 @@ def get_applicant_by_cv_path(cv_path: string):
                 print(f"No. HP: {row['phone_number']}")
                 print(f"Role: {row['application_role']}")
                 print(f"CV Path: {row['cv_path']}")
-            return result
+                result_row.append(row['applicant_id'])
+                result_row.append(row['first_name'] + " " + row['last_name'])
+                result_row.append(row['date_of_birth'])
+                result_row.append(row['address'])
+                result_row.append(row['phone_number'])
+                result_row.append(row['application_role'])
+                result_row.append(row['cv_path'])
+            print(result_row)
+            return result_row
         else:
             print(f"Tidak ditemukan pelamar dengan path {cv_path}")
-            return None
+            return []
 
     except mysql.connector.Error as err:
         print(f"Kesalahan Database: {err}")
