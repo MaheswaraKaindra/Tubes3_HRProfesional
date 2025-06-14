@@ -1,5 +1,5 @@
 import re
-import pdf_to_string
+from . import pdf_to_string
 
 NEXT_HEADERS = (
     r'(?:summary|professional summary|profile|highlights|skills?|technical skills?|'
