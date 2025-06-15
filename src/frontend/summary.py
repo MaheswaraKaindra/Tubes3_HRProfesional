@@ -196,11 +196,27 @@ class Summary:
         right_panel_content = ft.Container(
             content=ft.Column(
                 [   
-                    ft.Container(
-                        content=ft.Text("CV Summary", size=28, weight=ft.FontWeight.BOLD, color="#256988", text_align=ft.TextAlign.CENTER),
-                        alignment=ft.alignment.center,
-                        # padding=ft.padding.only(bottom=5),
-                    ),
+                    ft.Row(
+                            [
+                                ft.Container(
+                                    content=ft.Text("CV Summary", size=28, weight=ft.FontWeight.BOLD, color="#256988", text_align=ft.TextAlign.CENTER),
+                                    alignment=ft.alignment.top_left,
+                                    expand=True,
+                                ),
+                                ft.Container(
+                                    content=ft.ElevatedButton("View CV", style=ft.ButtonStyle(
+                                                            bgcolor="#395B9D", 
+                                                            color="#DEE2E2", 
+                                                            shadow_color="#395B9D",
+                                                            shape=ft.RoundedRectangleBorder(radius=8)
+                                                        ),
+                                                        on_click=lambda _ : on_view_cv_click(selected_cv)
+                                            ),
+                                    alignment=ft.alignment.top_right,
+                                ),  
+                            ],
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        ),
                     ft.Divider(height=1, color="#000000"),
                     ft.Container(cv_summary_grid, expand=True)
                 ],
