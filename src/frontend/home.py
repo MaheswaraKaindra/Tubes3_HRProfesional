@@ -81,11 +81,11 @@ class Home:
             value="KMP", # default
             content=ft.Row(
                 [
-                    ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
+                    ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD, color="#000000"), active_color="#395B9D"),
                     ft.Container(width=20),
-                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D"),
+                    ft.Radio(value="BM", label="BM", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD, color="#000000"), active_color="#395B9D"),
                     ft.Container(width=20),
-                    ft.Radio(value="AC", label="Aho-Corasick", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD), active_color="#395B9D")
+                    ft.Radio(value="AC", label="Aho-Corasick", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD, color="#000000"), active_color="#395B9D")
                 ],
                 alignment=ft.MainAxisAlignment.START,
             )
@@ -119,7 +119,12 @@ class Home:
                 print("No search results found.")
                 cv_results_grid.controls.append(ft.Text("No matching CVs found.", text_align=ft.TextAlign.CENTER))
             else:
-                for cv_data in self.state["search_results"]:
+                sorted_cv_data = sorted(
+                    self.state["search_results"],
+                    key=lambda cv: sum(cv["keyword_counts"].values()),
+                    reverse=True
+                )
+                for cv_data in sorted_cv_data:
                     summary_handler = lambda _, cv=cv_data: on_summary_click(cv)
                     view_cv_handler = lambda _, cv=cv_data: on_view_cv_click(cv)
 
