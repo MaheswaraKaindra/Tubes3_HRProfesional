@@ -65,29 +65,36 @@ class CV:
         def open_cv_file(e):
             try:
                 if not os.path.exists(source_path):
-                    raise FileNotFoundError(f"File tidak ditemukan: {source_path}")
-                os.startfile(source_path)
-
+                    raise FileNotFoundError(f"File not found: {source_path}")
+                if os.name == 'nt':
+                    os.startfile(source_path)
+                elif os.name == 'posix':
+                    import subprocess
+                    result = subprocess.Popen(['open', source_path])
+                else:
+                    raise OSError("Unsupported OS for opening files.")
             except Exception as e:
-                ft.snackbar.Snackbar(
-                    content=ft.Text(f"Error membuka file: {str(e)}", color="#FF0000"),
+                self.page.snack_bar = ft.SnackBar(
+                    content=ft.Text(f"Error opening file: {str(e)}", color="#FF0000"),
                     action="OK",
                     action_color="#FFFFFF",
-                ).open(self.page)
+                )
+                self.page.snack_bar.open = True
+                self.page.update()
 
         body = ft.Container(
             content=ft.Column(
                 [
                     ft.Icon(name=ft.Icons.PICTURE_AS_PDF_ROUNDED, size=120, color="#DEE2E2"),
                     ft.Text(
-                        f"Dokumen CV Siap Dibuka:\n{file_name}",
+                        f"CV Ready:\n{file_name}",
                         size=22,
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
                         color="#DEE2E2"
                     ),                    ft.Container(height=20),
                     ft.ElevatedButton(
-                        "Buka File PDF",
+                        "Open PDF File",
                         icon=ft.Icons.OPEN_IN_NEW,
                         on_click=open_cv_file,
                         bgcolor="#FAF7F0",
@@ -99,7 +106,7 @@ class CV:
                         )
                     ),
                     ft.Text(
-                        "(Akan terbuka di aplikasi PDF default atau tab browser baru)",
+                        "Your PDF will be opened in the default PDF viewer.",
                         italic=True,
                         size=14,
                         color="#B0C4DE" 
