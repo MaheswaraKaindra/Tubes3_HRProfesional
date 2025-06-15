@@ -58,15 +58,27 @@ class Home:
         )
 
         # Left Panel - Search Controls
+        def validate_input(e: None):
+            if self.num_applicants_input.value and self.num_applicants_input.value.strip():
+                try:
+                    # Coba konversi ke integer untuk memeriksa apakah itu angka
+                    int(self.num_applicants_input.value)
+                    self.num_applicants_input.error_text = None # Hapus error jika valid
+                except ValueError:
+                    # Jika gagal (bukan angka), tampilkan error dan set tidak valid
+                    self.num_applicants_input.error_text = "Input must be a number"
+            self.page.update()
+            
         self.keywords_input = ft.TextField( # keywords input
             label="Enter keywords separated by comma",
             border_color="#395B9D",
             border_radius=5,
             bgcolor="#FFFFFF",
-            text_style=ft.TextStyle(color="#000000")
+            text_style=ft.TextStyle(color="#000000"),
         )
 
         self.algorithm_options = ft.RadioGroup( # algorithm input
+            value="KMP", # default
             content=ft.Row(
                 [
                     ft.Radio(value="KMP", label="KMP", label_style=ft.TextStyle(size=16, weight=ft.FontWeight.BOLD, color="#000000"), active_color="#395B9D"),
@@ -84,19 +96,20 @@ class Home:
             border_color="#395B9D",
             border_radius=5,
             bgcolor="#FFFFFF",
-            text_style=ft.TextStyle(color="#000000")
+            text_style=ft.TextStyle(color="#000000"),
+            on_change=validate_input,
         )
-
-        # self.loading_indicator = ft.ProgressRing(width=20, height=20, stroke_width=2, visible=True)
-        self.search_button_text = "Search"
 
         def on_summary_click(cv_data):
             self.state["selected_cv"] = cv_data
-            self.page.views.append(Summary(self.page, self.state).build_ui())
+            # self.page.views.append(Summary(self.page, self.state).build_ui())
             self.page.go("/summary")
 
-        def on_view_cv_click(e):
-            self.page.clean()
+        def on_view_cv_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+
+            self.page.go("/cv")
 
         def update_ui_from_state():
             results_info_text.value = self.state["last_info_text"]
@@ -148,7 +161,7 @@ class Home:
             update_ui_from_state()
 
         self.search_button = ft.ElevatedButton( # search button
-            self.search_button_text,
+            "Search",
             bgcolor="#FDF6EC",
             color="#395B9D",
             width=450,
@@ -156,6 +169,7 @@ class Home:
             style=ft.ButtonStyle(
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
+            expand=True,
             on_click=on_search_click,
         )
 
@@ -191,18 +205,6 @@ class Home:
         )
 
         # Right Panel - Results
-        def on_summary_click(cv_data):
-            self.state["selected_cv"] = cv_data
-            # self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
-            self.page.go("/summary")
-
-        def on_view_cv_click(cv_data):
-            self.state["selected_cv"] = cv_data
-            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
-
-            self.page.go("/cv")
-           
-
         results_info_text = ft.Text()
 
         cv_results_grid = ft.GridView(
