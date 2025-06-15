@@ -1,0 +1,6 @@
+flet>=0.18.0
+mysql-connector-python>=8.0.0
+pdfplumber>=0.11.7
+PyMuPDF>=1.23.7
+numpy>=2.0.0
+faker>=24.0.0
