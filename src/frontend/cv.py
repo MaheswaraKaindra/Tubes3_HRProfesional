@@ -24,13 +24,18 @@ class CV:
                 route="/cv",
                 bgcolor=self.page.bgcolor,
                 controls=[
-                    ft.Text(
-                        "No CV selected. Please go back and choose a CV first.",
-                        color="#FAF7F0",
-                        size=24,
-                        weight=ft.FontWeight.BOLD,
+                    ft.Column(
+                        [
+                            ft.Text(
+                                "No CV selected. Please go back and choose a CV first.",
+                                color="#FAF7F0",
+                                size=24,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                        ],
+                        expand=True,
                     )
-                ],
+                ]
             )
 
         # Header Section
