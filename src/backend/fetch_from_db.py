@@ -3,7 +3,7 @@ import mysql.connector, string
 def get_applicant_by_cv_path(cv_path: string):
     db = {
         "host":     "localhost",
-        "user":     "hr_admin",
+        "user":     "root",
         "password": "",
         "database": "HRProfesional_schema",
         "charset":  "utf8mb4"

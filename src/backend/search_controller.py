@@ -12,7 +12,7 @@ def get_db_connection():
     try:
         connection = mysql.connector.connect(
             host="localhost",
-            user="hr_admin",
+            user="root",
             password="",
             database="HRProfesional_schema"
         )
@@ -100,6 +100,8 @@ def load_cv_data(directory: str):
     print(f"Loaded {len(_cv_data_cache)} CVs.")
 
 def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
+    import time 
+    
     if algorithm == 'KMP':
         search_function = knuth_morris_pratt
     elif algorithm == 'BM':
@@ -108,10 +110,11 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
         search_function = None  # handled separately
     else:
         search_function = knuth_morris_pratt
+        
     current_cv_keyword_counts = {}
     current_cv_matched_keywords = set()
     keywords_to_fuzzy_check = set(clean_keywords)
-
+    
     if algorithm == 'AC':
         from .aho_corasick import aho_corasick
         ac_results = aho_corasick(cv['normalized_text'], list(clean_keywords))
@@ -121,9 +124,9 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
                 current_cv_matched_keywords.add(keyword)
                 if keyword in keywords_to_fuzzy_check:
                     keywords_to_fuzzy_check.remove(keyword)
+        
         fuzzy_time = 0
         if keywords_to_fuzzy_check:
-            import time
             fuzzy_start = time.perf_counter()
             for keyword in keywords_to_fuzzy_check:
                 print(f"Processing fuzzy keyword (AC): '{keyword}' in CV: '{cv['name']}'")
