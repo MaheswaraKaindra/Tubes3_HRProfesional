@@ -169,7 +169,7 @@ class Home:
             style=ft.ButtonStyle(
                 shape=ft.RoundedRectangleBorder(radius=8),
             ),
-            expand=True,
+            # expand=True,
             on_click=on_search_click,
         )
 
@@ -205,7 +205,7 @@ class Home:
         )
 
         # Right Panel - Results
-        results_info_text = ft.Text()
+        results_info_text = ft.Text(color="#000000")
 
         cv_results_grid = ft.GridView(
             runs_count=3,
