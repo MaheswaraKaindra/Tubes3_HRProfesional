@@ -105,7 +105,7 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
     elif algorithm == 'BM':
         search_function = boyer_moore
     elif algorithm == 'AC':
-        search_function = None  # handled separately WKWKWK formatnya beda
+        search_function = None  # handled separately
     else:
         search_function = knuth_morris_pratt
     current_cv_keyword_counts = {}
@@ -113,6 +113,7 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
     keywords_to_fuzzy_check = set(clean_keywords)
 
     if algorithm == 'AC':
+        from .aho_corasick import aho_corasick
         ac_results = aho_corasick(cv['normalized_text'], list(clean_keywords))
         for keyword, count in ac_results.items():
             if count > 0:
@@ -120,7 +121,23 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
                 current_cv_matched_keywords.add(keyword)
                 if keyword in keywords_to_fuzzy_check:
                     keywords_to_fuzzy_check.remove(keyword)
-        exact_time = 0
+        fuzzy_time = 0
+        if keywords_to_fuzzy_check:
+            import time
+            fuzzy_start = time.perf_counter()
+            for keyword in keywords_to_fuzzy_check:
+                print(f"Processing fuzzy keyword (AC): '{keyword}' in CV: '{cv['name']}'")
+                fuzzy_matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
+                if fuzzy_matches:
+                    best_match_word = fuzzy_matches[0]['word']
+                    fuzzy_count = cv['normalized_text'].count(best_match_word)
+                    match_key = f"{keyword} → {best_match_word}"
+                    current_cv_keyword_counts[match_key] = fuzzy_count
+                    current_cv_matched_keywords.add(keyword)
+            fuzzy_time = time.perf_counter() - fuzzy_start
+        else:
+            fuzzy_time = 0
+        exact_time = 0  # Not timing separately for AC
     else:
         exact_start = time.perf_counter()
         for keyword in clean_keywords:
@@ -132,20 +149,19 @@ def process_cv(cv, clean_keywords, algorithm, fuzzy_threshold):
                 if keyword in keywords_to_fuzzy_check:
                     keywords_to_fuzzy_check.remove(keyword)
         exact_time = time.perf_counter() - exact_start
-
-    fuzzy_time = 0
-    if keywords_to_fuzzy_check and algorithm != 'AC':
-        fuzzy_start = time.perf_counter()
-        for keyword in keywords_to_fuzzy_check:
-            print(f"Processing fuzzy keyword: '{keyword}' in CV: '{cv['name']}'")
-            fuzzy_matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
-            if fuzzy_matches:
-                best_match_word = fuzzy_matches[0]['word']
-                frequency_of_best_match = len(search_function(cv['normalized_text'], best_match_word))
-                match_key = f"{keyword} → {best_match_word}"
-                current_cv_keyword_counts[match_key] = frequency_of_best_match
-                current_cv_matched_keywords.add(keyword)
-        fuzzy_time = time.perf_counter() - fuzzy_start
+        fuzzy_time = 0
+        if keywords_to_fuzzy_check:
+            fuzzy_start = time.perf_counter()
+            for keyword in keywords_to_fuzzy_check:
+                print(f"Processing fuzzy keyword: '{keyword}' in CV: '{cv['name']}'")
+                fuzzy_matches = find_fuzzy_matches(keyword, cv['normalized_text'], fuzzy_threshold)
+                if fuzzy_matches:
+                    best_match_word = fuzzy_matches[0]['word']
+                    frequency_of_best_match = len(search_function(cv['normalized_text'], best_match_word))
+                    match_key = f"{keyword} → {best_match_word}"
+                    current_cv_keyword_counts[match_key] = frequency_of_best_match
+                    current_cv_matched_keywords.add(keyword)
+            fuzzy_time = time.perf_counter() - fuzzy_start
 
     if current_cv_matched_keywords:
         return {
@@ -172,7 +188,6 @@ def search_cv_data(keywords: list[str], algorithm: str, top_n: int, fuzzy_thresh
     total_fuzzy_time = 0
 
     import concurrent.futures
-    # Prepare arguments for each CV
     args_list = [(cv, clean_keywords, algorithm, fuzzy_threshold) for cv in _cv_data_cache]
 
     with concurrent.futures.ProcessPoolExecutor() as executor:
