@@ -92,11 +92,14 @@ class Home:
 
         def on_summary_click(cv_data):
             self.state["selected_cv"] = cv_data
-            self.page.views.append(Summary(self.page, self.state).build_ui())
+            # self.page.views.append(Summary(self.page, self.state).build_ui())
             self.page.go("/summary")
 
-        def on_view_cv_click(e):
-            self.page.clean()
+        def on_view_cv_click(cv_data):
+            self.state["selected_cv"] = cv_data
+            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+
+            self.page.go("/cv")
 
         def update_ui_from_state():
             results_info_text.value = self.state["last_info_text"]
@@ -186,18 +189,6 @@ class Home:
         )
 
         # Right Panel - Results
-        def on_summary_click(cv_data):
-            self.state["selected_cv"] = cv_data
-            # self.page.views.append(Summary(self.page, self.state["selected_cv"]).build_ui())
-            self.page.go("/summary")
-
-        def on_view_cv_click(cv_data):
-            self.state["selected_cv"] = cv_data
-            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
-
-            self.page.go("/cv")
-           
-
         results_info_text = ft.Text()
 
         cv_results_grid = ft.GridView(

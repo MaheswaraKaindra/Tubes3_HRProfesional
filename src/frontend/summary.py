@@ -1,5 +1,5 @@
 import flet as ft
-from . import utils
+from . import utils, cv
 from ..backend.extract_summary import parse_resume, print_parse_result
 from ..backend.pdf_to_string import pdf_to_string
 from ..backend.fetch_from_db import get_applicant_by_cv_path
@@ -63,18 +63,20 @@ class Summary:
 
         def on_summary_click(cv_data):
             self.state["selected_cv"] = cv_data
-            # self.page.views.append(Summary(self.page, self.state).build_ui())
+            self.page.views.append(Summary(self.page, self.state).build_ui())
             self.page.go("/summary")
 
-        def on_view_cv_click(e):
+        def on_view_cv_click(cv_data):
             self.state["selected_cv"] = cv_data
-            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+            self.page.views.append(cv.CV(self.page, self.state["selected_cv"]).build_ui())
 
             self.page.go("/cv")
 
         for cv_data in self.state.get("search_results", []):
             if cv_data.get("path") != selected_cv.get("path"):
                 summary_handler = lambda _, cv=cv_data: on_summary_click(cv)
+                view_cv_handler = lambda _, cv=cv_data: on_view_cv_click(cv)
+                
                 cv_results_grid.controls.append(
                     utils.create_cv_card(self.page, 
                         cv_data["name"], 
