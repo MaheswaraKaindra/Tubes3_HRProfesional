@@ -108,13 +108,14 @@ class Home:
             else:
                 for cv_data in self.state["search_results"]:
                     summary_handler = lambda _, cv=cv_data: on_summary_click(cv)
+                    view_cv_handler = lambda _, cv=cv_data: on_view_cv_click(cv)
 
                     cv_results_grid.controls.append(
                         utils.create_cv_card(self.page, 
                             cv_data["name"], 
                             cv_data["keyword_counts"], 
                             on_summary_click=summary_handler, 
-                            on_view_cv_click=on_view_cv_click
+                            on_view_cv_click=view_cv_handler,
                         )
                     )
             self.page.update()
@@ -192,7 +193,7 @@ class Home:
 
         def on_view_cv_click(cv_data):
             self.state["selected_cv"] = cv_data
-            self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
+            # self.page.views.append(CV(self.page, self.state["selected_cv"]).build_ui())
 
             self.page.go("/cv")
            

@@ -1,6 +1,6 @@
 import os
 import flet as ft
-from flet import WebView
+import shutil
 
 class CV:
     def __init__(self, page: ft.Page, state: dict):
@@ -11,9 +11,10 @@ class CV:
         self.page.horizontal_alignment = ft.CrossAxisAlignment.START
         self.page.bgcolor = "#395B9D"
 
-    def build_ui(self) -> ft.View:
+    def build_ui(self):
         selected_cv = self.state.get("selected_cv")
-        cv_path = selected_cv.get("path")
+        cv_path = selected_cv.get("path") if selected_cv else None
+
         if not cv_path:
             return ft.View(
                 route="/cv",
@@ -57,11 +58,58 @@ class CV:
             alignment=ft.alignment.center_left
         )
 
-        abs_path = os.path.abspath(cv_path)
-        file_url = f"file:///{abs_path.replace(os.sep, '/')}"  
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        source_path = os.path.join(project_root, cv_path)
+        file_name = os.path.basename(source_path)
+
+        def open_cv_file(e):
+            try:
+                if not os.path.exists(source_path):
+                    raise FileNotFoundError(f"File tidak ditemukan: {source_path}")
+                os.startfile(source_path)
+
+            except Exception as e:
+                ft.snackbar.Snackbar(
+                    content=ft.Text(f"Error membuka file: {str(e)}", color="#FF0000"),
+                    action="OK",
+                    action_color="#FFFFFF",
+                ).open(self.page)
 
         body = ft.Container(
-            content=WebView(url=file_url, expand=True),
+            content=ft.Column(
+                [
+                    ft.Icon(name=ft.Icons.PICTURE_AS_PDF_ROUNDED, size=120, color="#DEE2E2"),
+                    ft.Text(
+                        f"Dokumen CV Siap Dibuka:\n{file_name}",
+                        size=22,
+                        weight=ft.FontWeight.BOLD,
+                        text_align=ft.TextAlign.CENTER,
+                        color="#DEE2E2"
+                    ),                    ft.Container(height=20),
+                    ft.ElevatedButton(
+                        "Buka File PDF",
+                        icon=ft.Icons.OPEN_IN_NEW,
+                        on_click=open_cv_file,
+                        bgcolor="#FAF7F0",
+                        color="#000000",
+                        height=50,
+                        style=ft.ButtonStyle(
+                            shape=ft.RoundedRectangleBorder(radius=10),
+                            padding=20,
+                        )
+                    ),
+                    ft.Text(
+                        "(Akan terbuka di aplikasi PDF default atau tab browser baru)",
+                        italic=True,
+                        size=14,
+                        color="#B0C4DE" 
+                    )
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                alignment=ft.MainAxisAlignment.CENTER,
+                spacing=15,
+                expand=True,
+            ),
             expand=True,
         )
 
@@ -79,4 +127,16 @@ class CV:
             ]
         )
 
-  
+def main(page: ft.Page):
+    # testing
+    mock_cv_path = os.path.join('data', 'Agriculture', '10953078.pdf')
+    
+    cv = CV(page, {"selected_cv": {"path": mock_cv_path}})
+    page.views.append(cv.build_ui())
+    page.update()
+
+if __name__ == "__main__":
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    assets_folder_path = os.path.join(project_root, "assets")
+
+    ft.app(target=main)

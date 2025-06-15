@@ -52,10 +52,15 @@ class About:
                         alignment=ft.alignment.center,
                         padding=ft.padding.only(top=10, bottom=5),
                     ),
-                    # ft.Image()
+                    ft.Image(
+                        src="HRProfesional.jpg",
+                        width=200,
+                        height=200,
+                        fit=ft.ImageFit.CONTAIN,
+                    ),
                     ft.Container(
                         content=ft.Text(
-                            "Undergraduate informatics engineering students from Institut Teknologi Bandung who love Algorithm Strategy",
+                            "Undergraduate Informatics Engineering Students \nfrom Institut Teknologi Bandung \nwho love Algorithm Strategy",
                             size=16,
                             color="#000000",
                             text_align=ft.TextAlign.CENTER,
@@ -67,6 +72,7 @@ class About:
                     ),
                 ],
                 spacing=10,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             ),
             bgcolor="#DEE2E2",
             padding=ft.padding.all(25),
